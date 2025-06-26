@@ -1,0 +1,70 @@
+/* Hide horizontal scrollbar while allowing scrolling */
+.hide-scrollbar {
+  overflow-x: auto;
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, and other Webkit browsers */
+}
+body, html, #root, .App {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+.main-content {
+  transition: padding-left 0.3s ease;
+}
+body, html, #root, .App {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+.main-content {
+  transition: padding-left 0.3s ease;
+}
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+
+  .print-area {
+    margin: 0;
+    padding: 0;
+    border: none;
+    box-shadow: none;
+    width: 100%;
+  }
+
+  .print-area table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .print-area table th,
+  .print-area table td {
+    border: 1px solid #d1d5db; /* border-gray-200 */
+    padding: 8px; /* px-6 py-4 adjusted for print */
+  }
+
+  .print-area table thead {
+    background-color: #312e81; /* bg-indigo-900 */
+    color: #ffffff; /* text-white */
+  }
+
+  .print-area table tbody {
+    background-color: #ffffff; /* bg-white */
+  }
+
+  .print-area table tr:hover {
+    background-color: #ffffff; /* disable hover:bg-gray-50 for print */
+  }
+
+  body {
+    background: #ffffff; /* bg-white */
+    margin: 10mm;
+  }
+}
