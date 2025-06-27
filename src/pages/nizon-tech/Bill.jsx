@@ -505,7 +505,7 @@
 
 // export default Bill;
 
-import axios from '../axiosConfig';
+import axios from '../../axiosConfig';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 import { FaSearch, FaEdit, FaTrash, FaPlus, FaTimes, FaPrint, FaWhatsapp, FaPhone, FaMapMarkerAlt } from 'react-icons/fa';

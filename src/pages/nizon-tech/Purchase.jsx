@@ -1,4 +1,4 @@
-import axios from '../axiosConfig';
+import axios from '../../axiosConfig';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 import { FaSearch, FaEdit, FaTrash } from 'react-icons/fa';
