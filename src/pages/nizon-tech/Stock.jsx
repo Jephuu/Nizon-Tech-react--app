@@ -318,10 +318,10 @@
 
 // export default Stock;
 
-import axios from '../../axiosConfig';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 import { FaSearch, FaEdit, FaTrash } from 'react-icons/fa';
+import axios from '../../axiosConfig'; // Correct import
 
 const Stock = () => {
   const [stocks, setStocks] = useState([]);
@@ -344,9 +344,11 @@ const Stock = () => {
     const fetchStocks = async () => {
       try {
         const res = await axios.get(`/api/stocks?search=${search}&sortBy=${sortBy}&order=${sortOrder}`);
-        setStocks(res.data);
+        setStocks(Array.isArray(res.data) ? res.data : []); // Ensure array
       } catch (err) {
+        console.error('Error fetching stocks:', err);
         toast.error('Failed to fetch stocks');
+        setStocks([]); // Set empty array on error
       }
     };
     fetchStocks();
@@ -612,41 +614,49 @@ const Stock = () => {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {stocks.map((stock) => (
-                <tr key={stock._id} className="hover:bg-gray-50 transition duration-200">
-                  <td className="px-6 py-4 whitespace-nowrap">{stock.orderNo}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">{stock.stockName}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">{stock.modelNo}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">{stock.purchaseOrigin}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    {stock.purchaseId?.purchaseDate
-                      ? new Date(stock.purchaseId.purchaseDate).toLocaleDateString()
-                      : stock.dateOfPurchase
-                        ? new Date(stock.dateOfPurchase).toLocaleDateString()
+              {stocks.length > 0 ? (
+                stocks.map((stock) => (
+                  <tr key={stock._id} className="hover:bg-gray-50 transition duration-200">
+                    <td className="px-6 py-4 whitespace-nowrap">{stock.orderNo}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">{stock.stockName}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">{stock.modelNo}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">{stock.purchaseOrigin}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      {stock.purchaseId?.purchaseDate
+                        ? new Date(stock.purchaseId.purchaseDate).toLocaleDateString()
+                        : stock.dateOfPurchase
+                          ? new Date(stock.dateOfPurchase).toLocaleDateString()
+                          : 'N/A'}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">{stock.quantity}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      {(stock.salePrice || stock.purchaseId?.salePrice)
+                        ? (stock.salePrice || stock.purchaseId.salePrice).toFixed(2)
                         : 'N/A'}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">{stock.quantity}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    {(stock.salePrice || stock.purchaseId?.salePrice)
-                      ? (stock.salePrice || stock.purchaseId.salePrice).toFixed(2)
-                      : 'N/A'}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap flex gap-2">
-                    <button
-                      onClick={() => handleEdit(stock)}
-                      className="text-blue-600 hover:text-blue-800"
-                    >
-                      <FaEdit />
-                    </button>
-                    <button
-                      onClick={() => handleDelete(stock._id)}
-                      className="text-red-600 hover:text-red-800"
-                    >
-                      <FaTrash />
-                    </button>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap flex gap-2">
+                      <button
+                        onClick={() => handleEdit(stock)}
+                        className="text-blue-600 hover:text-blue-800"
+                      >
+                        <FaEdit />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(stock._id)}
+                        className="text-red-600 hover:text-red-800"
+                      >
+                        <FaTrash />
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="8" className="px-6 py-4 text-center text-gray-500">
+                    No stocks found
                   </td>
                 </tr>
-              ))}
+              )}
             </tbody>
           </table>
         </div>
