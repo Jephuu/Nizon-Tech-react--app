@@ -505,63 +505,2133 @@
 
 // export default Bill;
 
+// import axios from '../../axiosConfig';
+// import { useEffect, useState } from 'react';
+// import { toast } from 'react-toastify';
+// import { FaSearch, FaEdit, FaTrash, FaPlus, FaTimes, FaPrint, FaWhatsapp, FaPhone, FaMapMarkerAlt } from 'react-icons/fa';
+
+// const Bill = () => {
+//   const [bills, setBills] = useState([]);
+//   const [formData, setFormData] = useState({
+//     billId: '',
+//     customer: '',
+//     dueDate: '',
+//     items: [{ no: '', particulars: '', qty: '', rate: '', amount: '' }],
+//     totalAmount: '',
+//   });
+//   const [editingId, setEditingId] = useState(null);
+//   const [search, setSearch] = useState('');
+//   const [sortBy, setSortBy] = useState('dueDate');
+//   const [sortOrder, setSortOrder] = useState('desc');
+
+//   // Fetch bills
+//   useEffect(() => {
+//     const fetchBills = async () => {
+//       try {
+//         const res = await axios.get(`/api/bills?search=${search}&sortBy=${sortBy}&order=${sortOrder}`);
+//         setBills(res.data);
+//       } catch (err) {
+//         toast.error('Failed to fetch bills');
+//       }
+//     };
+//     fetchBills();
+//   }, [search, sortBy, sortOrder]);
+
+//   // Handle form input changes
+//   const handleInputChange = (e, index = null) => {
+//     const { name, value } = e.target;
+//     if (index !== null) {
+//       const newItems = [...formData.items];
+//       newItems[index][name] = value;
+//       if (name === 'qty' || name === 'rate') {
+//         const qty = parseFloat(newItems[index].qty) || 0;
+//         const rate = parseFloat(newItems[index].rate) || 0;
+//         newItems[index].amount = (qty * rate).toFixed(2);
+//       }
+//       setFormData({ ...formData, items: newItems });
+//     } else {
+//       setFormData({ ...formData, [name]: value });
+//     }
+//     calculateTotal();
+//   };
+
+//   // Calculate total amount
+//   const calculateTotal = () => {
+//     const total = formData.items.reduce((sum, item) => sum + parseFloat(item.amount || 0), 0);
+//     setFormData((prev) => ({ ...prev, totalAmount: total.toFixed(2) }));
+//   };
+
+//   // Add new item
+//   const addItem = () => {
+//     setFormData({
+//       ...formData,
+//       items: [...formData.items, { no: formData.items.length + 1, particulars: '', qty: '', rate: '', amount: '' }],
+//     });
+//   };
+
+//   // Remove item
+//   const removeItem = (index) => {
+//     const newItems = formData.items.filter((_, i) => i !== index);
+//     setFormData({ ...formData, items: newItems.map((item, i) => ({ ...item, no: i + 1 })) });
+//     calculateTotal();
+//   };
+
+//   // Handle form submission
+//   const handleSubmit = async (e) => {
+//     e.preventDefault();
+//     try {
+//       const billData = {
+//         ...formData,
+//         items: formData.items.map((item, index) => ({
+//           ...item,
+//           no: index + 1,
+//           qty: parseInt(item.qty),
+//           rate: parseFloat(item.rate),
+//           amount: parseFloat(item.amount),
+//         })),
+//         totalAmount: parseFloat(formData.totalAmount),
+//       };
+//       if (editingId) {
+//         const res = await axios.put(`/api/bills/${editingId}`, billData);
+//         setBills(bills.map((bill) => (bill._id === editingId ? res.data : bill)));
+//         setEditingId(null);
+//         toast.success('Bill updated successfully');
+//       } else {
+//         const res = await axios.post('/api/bills', billData);
+//         setBills([res.data, ...bills]);
+//         toast.success('Bill created successfully');
+//       }
+//       resetForm();
+//     } catch (err) {
+//       toast.error(err.response?.data?.error || 'Error saving bill');
+//     }
+//   };
+
+//   // Reset form
+//   const resetForm = () => {
+//     setFormData({
+//       billId: '',
+//       customer: '',
+//       dueDate: '',
+//       items: [{ no: 1, particulars: '', qty: '', rate: '', amount: '' }],
+//       totalAmount: '',
+//     });
+//     setEditingId(null);
+//   };
+
+//   // Handle edit
+//   const handleEdit = (bill) => {
+//     setEditingId(bill._id);
+//     setFormData({
+//       billId: bill.billId,
+//       customer: bill.customer,
+//       dueDate: bill.dueDate.split('T')[0],
+//       items: bill.items.map((item, index) => ({
+//         no: index + 1,
+//         particulars: item.particulars,
+//         qty: item.qty,
+//         rate: item.rate,
+//         amount: item.amount.toFixed(2),
+//       })),
+//       totalAmount: bill.totalAmount.toFixed(2),
+//     });
+//   };
+
+//   // Handle delete
+//   const handleDelete = async (id) => {
+//     try {
+//       await axios.delete(`/api/bills/${id}`);
+//       setBills(bills.filter((bill) => bill._id !== id));
+//       toast.success('Bill deleted successfully');
+//     } catch (err) {
+//       toast.error('Error deleting bill');
+//     }
+//   };
+
+//   // Handle sorting
+//   const handleSort = (field) => {
+//     setSortBy(field);
+//     setSortOrder(sortBy === field && sortOrder === 'asc' ? 'desc' : 'asc');
+//   };
+
+//   // Print bill
+//   const printBill = () => {
+//     console.log('Printing bill:', formData);
+//     window.print();
+//   };
+
+//   return (
+//     <div className="min-h-screen bg-gradient-to-br from-violet-200 to-blue-200 p-6">
+//       <div className="bg-white shadow-xl rounded-lg p-8 max-w-7xl mx-auto">
+//         <h2 className="text-3xl font-bold text-gray-800 mb-6 no-print">Bills</h2>
+
+//         {/* Search Bar */}
+//         <div className="mb-6 flex items-center gap-4 no-print">
+//           <div className="relative flex-1">
+//             <span className="absolute inset-y-0 left-0 flex items-center pl-3">
+//               <FaSearch className="text-gray-400" />
+//             </span>
+//             <input
+//               type="text"
+//               placeholder="Search by Bill ID or Customer"
+//               value={search}
+//               onChange={(e) => setSearch(e.target.value)}
+//               className="pl-10 p-3 border border-gray-300 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-blue-600 transition duration-200"
+//             />
+//           </div>
+//         </div>
+
+//         {/* Form for Create/Update */}
+//         <form onSubmit={handleSubmit} className="mb-8 no-print">
+//           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+//             <div>
+//               <label className="block text-sm font-medium text-gray-700 mb-1">Bill ID</label>
+//               <input
+//                 type="text"
+//                 name="billId"
+//                 value={formData.billId}
+//                 onChange={handleInputChange}
+//                 className="p-3 border border-gray-300 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-blue-600 transition duration-200"
+//                 required
+//               />
+//             </div>
+//             <div>
+//               <label className="block text-sm font-medium text-gray-700 mb-1">Customer</label>
+//               <input
+//                 type="text"
+//                 name="customer"
+//                 value={formData.customer}
+//                 onChange={handleInputChange}
+//                 className="p-3 border border-gray-300 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-blue-600 transition duration-200"
+//                 required
+//               />
+//             </div>
+//             <div>
+//               <label className="block text-sm font-medium text-gray-700 mb-1">Date</label>
+//               <input
+//                 type="date"
+//                 name="dueDate"
+//                 value={formData.dueDate}
+//                 onChange={handleInputChange}
+//                 className="p-3 border border-gray-300 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-blue-600 transition duration-200"
+//                 required
+//               />
+//             </div>
+//           </div>
+
+//           {/* Items Table */}
+//           <h3 className="text-xl font-semibold text-gray-800 mb-4">Items</h3>
+//           <div className="overflow-x-auto mb-4">
+//             <table className="min-w-full divide-y divide-gray-200">
+//               <thead className="bg-indigo-900 text-white">
+//                 <tr>
+//                   <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">No</th>
+//                   <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Particulars</th>
+//                   <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Qty</th>
+//                   <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Rate</th>
+//                   <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Amount</th>
+//                   <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Actions</th>
+//                 </tr>
+//               </thead>
+//               <tbody className="bg-white divide-y divide-gray-200">
+//                 {formData.items.map((item, index) => (
+//                   <tr key={index} className="hover:bg-gray-50 transition duration-200">
+//                     <td className="px-6 py-4 whitespace-nowrap">
+//                       <input
+//                         type="number"
+//                         name="no"
+//                         value={index + 1}
+//                         disabled
+//                         className="p-3 border border-gray-300 rounded-lg w-full bg-gray-100 cursor-not-allowed"
+//                       />
+//                     </td>
+//                     <td className="px-6 py-4 whitespace-nowrap">
+//                       <input
+//                         type="text"
+//                         name="particulars"
+//                         value={item.particulars}
+//                         onChange={(e) => handleInputChange(e, index)}
+//                         className="p-3 border border-gray-300 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-blue-600 transition duration-200"
+//                         required
+//                       />
+//                     </td>
+//                     <td className="px-6 py-4 whitespace-nowrap">
+//                       <input
+//                         type="number"
+//                         name="qty"
+//                         value={item.qty}
+//                         onChange={(e) => handleInputChange(e, index)}
+//                         className="p-3 border border-gray-300 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-blue-600 transition duration-200"
+//                         min="1"
+//                         required
+//                       />
+//                     </td>
+//                     <td className="px-6 py-4 whitespace-nowrap">
+//                       <input
+//                         type="number"
+//                         name="rate"
+//                         value={item.rate}
+//                         onChange={(e) => handleInputChange(e, index)}
+//                         className="p-3 border border-gray-300 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-blue-600 transition duration-200"
+//                         min="0"
+//                         step="0.01"
+//                         required
+//                       />
+//                     </td>
+//                     <td className="px-6 py-4 whitespace-nowrap">
+//                       <input
+//                         type="number"
+//                         name="amount"
+//                         value={item.amount}
+//                         disabled
+//                         className="p-3 border border-gray-300 rounded-lg w-full bg-gray-100 cursor-not-allowed"
+//                       />
+//                     </td>
+//                     <td className="px-6 py-4 whitespace-nowrap">
+//                       {formData.items.length > 1 && (
+//                         <button
+//                           type="button"
+//                           onClick={() => removeItem(index)}
+//                           className="text-red-600 hover:text-red-800"
+//                         >
+//                           <FaTimes />
+//                         </button>
+//                       )}
+//                     </td>
+//                   </tr>
+//                 ))}
+//               </tbody>
+//             </table>
+//           </div>
+//           <button
+//             type="button"
+//             onClick={addItem}
+//             className="bg-green-600 text-white p-3 rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-600 transition duration-200 mb-6 flex items-center gap-2"
+//           >
+//             <FaPlus /> Add Item
+//           </button>
+
+//           <div className="flex justify-between items-center mb-6">
+//             <div>
+//               <label className="block text-sm font-medium text-gray-700 mb-1">Total Amount</label>
+//               <input
+//                 type="number"
+//                 name="totalAmount"
+//                 value={formData.totalAmount}
+//                 disabled
+//                 className="p-3 border border-gray-300 rounded-lg w-full bg-gray-100 cursor-not-allowed"
+//               />
+//             </div>
+//             <div className="flex gap-4">
+//               <button
+//                 type="submit"
+//                 className="bg-blue-600 text-white p-3 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-600 transition duration-200 flex items-center gap-2"
+//               >
+//                 {editingId ? 'Update Bill' : 'Save Bill'}
+//               </button>
+//               <button
+//                 type="button"
+//                 onClick={printBill}
+//                 className="bg-purple-600 text-white p-3 rounded-lg hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-600 transition duration-200 flex items-center gap-2"
+//               >
+//                 <FaPrint /> Print Bill
+//               </button>
+//               {editingId && (
+//                 <button
+//                   type="button"
+//                   onClick={resetForm}
+//                   className="bg-gray-600 text-white p-3 rounded-lg hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-600 transition duration-200 flex items-center gap-2"
+//                 >
+//                   Cancel
+//                 </button>
+//               )}
+//             </div>
+//           </div>
+//         </form>
+
+//         {/* Bill Preview */}
+//         <div className="mt-8 p-6 border border-gray-200 rounded-lg bg-white shadow-md print-area">
+//           <h3 className="text-xl font-semibold text-gray-800 mb-4 no-print">Bill Preview</h3>
+//           <div className="flex justify-between items-start mb-4">
+//             <img src="/Images/logo.png" alt="Nizon Tech Logo" className="w-32" />
+//             <div className="text-right text-sm text-gray-600 space-y-1">
+//               <p className="flex items-center justify-end gap-2">
+//                 <FaWhatsapp className="text-green-500" /> 9846200284
+//               </p>
+//               <p className="flex items-center justify-end gap-2">
+//                 <FaPhone className="text-blue-500" /> 8078200284
+//               </p>
+//               <p className="flex items-center justify-end gap-2">
+//                 <FaMapMarkerAlt className="text-red-500" /> Near Canara Bank, KORATTY
+//               </p>
+//             </div>
+//           </div>
+//           <h1 className="text-2xl font-bold text-center text-gray-800 my-4">Bill</h1>
+//           <div className="flex justify-between mb-4">
+//             <div className="text-left text-sm text-gray-600 space-y-1">
+//               <p><strong>Bill ID:</strong> {formData.billId || 'N/A'}</p>
+//               <p><strong>Customer:</strong> {formData.customer || 'N/A'}</p>
+//             </div>
+//             <div className="text-right text-sm text-gray-600">
+//               <p><strong>Date:</strong> {formData.dueDate ? new Date(formData.dueDate).toLocaleDateString() : 'N/A'}</p>
+//             </div>
+//           </div>
+//           <div className="overflow-x-auto">
+//             <table className="min-w-full divide-y divide-gray-200">
+//               <thead className="bg-indigo-900 text-white">
+//                 <tr>
+//                   <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">No</th>
+//                   <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Particulars</th>
+//                   <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Qty</th>
+//                   <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Rate</th>
+//                   <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Amount Rs</th>
+//                   <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Ps</th>
+//                 </tr>
+//               </thead>
+//               <tbody className="bg-white divide-y divide-gray-200">
+//                 {formData.items.map((item, index) => {
+//                   const amount = parseFloat(item.amount) || 0;
+//                   const rs = Math.floor(amount);
+//                   const ps = Math.round((amount - rs) * 100);
+//                   return (
+//                     <tr key={index} className="hover:bg-gray-50 transition duration-200">
+//                       <td className="px-6 py-4 whitespace-nowrap">{index + 1}</td>
+//                       <td className="px-6 py-4 whitespace-nowrap">{item.particulars || 'N/A'}</td>
+//                       <td className="px-6 py-4 whitespace-nowrap">{item.qty || '0'}</td>
+//                       <td className="px-6 py-4 whitespace-nowrap">{item.rate || '0'}</td>
+//                       <td className="px-6 py-4 whitespace-nowrap">{rs}</td>
+//                       <td className="px-6 py-4 whitespace-nowrap">{ps}</td>
+//                     </tr>
+//                   );
+//                 })}
+//                 <tr>
+//                   <td colSpan="4" className="px-6 py-4 text-right font-bold text-gray-800">Total</td>
+//                   <td className="px-6 py-4 font-bold text-gray-800">{Math.floor(formData.totalAmount || 0)}</td>
+//                   <td className="px-6 py-4 font-bold text-gray-800">{Math.round((parseFloat(formData.totalAmount || 0) - Math.floor(parseFloat(formData.totalAmount || 0))) * 100)}</td>
+//                 </tr>
+//               </tbody>
+//             </table>
+//           </div>
+//           <div className="flex justify-between mt-6 text-sm text-gray-600">
+//             <div className="space-y-1">
+//               <p className="font-bold">BANK DETAILS</p>
+//               <p>NAME: ANTHONESE KD</p>
+//               <p>CANARA BANK KORATTY</p>
+//               <p>A/C NO: 3480101003736</p>
+//               <p>IFSC: CNRB0003480</p>
+//             </div>
+//             <div className="text-right">
+//               <p>Signature: ____________________</p>
+//             </div>
+//           </div>
+//         </div>
+
+//         {/* Bills Table */}
+//         <h3 className="text-xl font-semibold text-gray-800 mt-8 mb-4 no-print">Saved Bills</h3>
+//         <div className="overflow-x-auto no-print">
+//           <table className="min-w-full divide-y divide-gray-200">
+//             <thead className="bg-indigo-900 text-white">
+//               <tr>
+//                 <th
+//                   className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider cursor-pointer"
+//                   onClick={() => handleSort('billId')}
+//                 >
+//                   Bill ID {sortBy === 'billId' && (sortOrder === 'asc' ? '↑' : '↓')}
+//                 </th>
+//                 <th
+//                   className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider cursor-pointer"
+//                   onClick={() => handleSort('customer')}
+//                 >
+//                   Customer {sortBy === 'customer' && (sortOrder === 'asc' ? '↑' : '↓')}
+//                 </th>
+//                 <th
+//                   className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider cursor-pointer"
+//                   onClick={() => handleSort('totalAmount')}
+//                 >
+//                   Total Amount {sortBy === 'totalAmount' && (sortOrder === 'asc' ? '↑' : '↓')}
+//                 </th>
+//                 <th
+//                   className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider cursor-pointer"
+//                   onClick={() => handleSort('dueDate')}
+//                 >
+//                   Date {sortBy === 'dueDate' && (sortOrder === 'asc' ? '↑' : '↓')}
+//                 </th>
+//                 <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Actions</th>
+//               </tr>
+//             </thead>
+//             <tbody className="bg-white divide-y divide-gray-200">
+//               {bills.map((bill) => (
+//                 <tr key={bill._id} className="hover:bg-gray-50 transition duration-200">
+//                   <td className="px-6 py-4 whitespace-nowrap">{bill.billId}</td>
+//                   <td className="px-6 py-4 whitespace-nowrap">{bill.customer}</td>
+//                   <td className="px-6 py-4 whitespace-nowrap">${bill.totalAmount.toFixed(2)}</td>
+//                   <td className="px-6 py-4 whitespace-nowrap">{new Date(bill.dueDate).toLocaleDateString()}</td>
+//                   <td className="px-6 py-4 whitespace-nowrap flex items-center gap-2">
+//                     <button
+//                       onClick={() => handleEdit(bill)}
+//                       className="text-blue-500 hover:text-blue-600"
+//                     >
+//                       <FaEdit />
+//                     </button>
+//                     <button
+//                       onClick={() => handleDelete(bill._id)}
+//                       className="text-red-600 hover:text-red-400"
+//                     >
+//                       <FaTrash />
+//                     </button>
+//                   </td>
+//                 </tr>
+//               ))}
+//             </tbody>
+//           </table>
+//         </div>
+//       </div>
+//     </div>
+//   );
+// };
+
+// export default Bill;
+
+
+// import axios from '../../axiosConfig';
+// import { useEffect, useState, useRef } from 'react';
+// import { toast } from 'react-toastify';
+// import { FaSearch, FaEdit, FaTrash, FaPlus, FaTimes, FaPrint, FaWhatsapp, FaPhone, FaMapMarkerAlt, FaChevronDown } from 'react-icons/fa';
+
+// const Bill = () => {
+//   const [bills, setBills] = useState([]);
+//   const [stocks, setStocks] = useState([]);
+  
+//   const [formData, setFormData] = useState({
+//     billId: '',
+//     customer: '',
+//     dueDate: '',
+//     items: [{ no: 1, particulars: '', qty: '', rate: '', amount: '' }],
+//     totalAmount: '',
+//   });
+//   const [editingId, setEditingId] = useState(null);
+//   const [search, setSearch] = useState('');
+//   const [sortBy, setSortBy] = useState('dueDate');
+//   const [sortOrder, setSortOrder] = useState('desc');
+
+//   // Dropdown state
+//   const [showDropdown, setShowDropdown] = useState({});
+//   const dropdownRefs = useRef([]);
+
+//   // Fetch bills and stocks
+//   useEffect(() => {
+//     const fetchData = async () => {
+//       try {
+//         const [billsRes, stocksRes] = await Promise.all([
+//           axios.get(`/api/bills?search=${search}&sortBy=${sortBy}&order=${sortOrder}`),
+//           axios.get('/api/stocks'),
+//         ]);
+//         setBills(Array.isArray(billsRes.data) ? billsRes.data : []);
+//         setStocks(Array.isArray(stocksRes.data) ? stocksRes.data : []);
+//       } catch (err) {
+//         toast.error('Failed to load data');
+//       }
+//     };
+//     fetchData();
+//   }, [search, sortBy, sortOrder]);
+
+//   // Get stock info
+//   const getStockInfo = (name) => {
+//     const stock = stocks.find(s => s.stockName === name);
+//     return {
+//       available: stock ? stock.quantity : 0,
+//       price: stock?.salePrice || stock?.purchaseId?.salePrice || 0,
+//     };
+//   };
+
+//   const productOptions = [...new Set(stocks.map(s => s.stockName).filter(Boolean))].sort();
+
+//   // Handle product name change + auto-fill price
+//   const handleProductChange = (e, index) => {
+//     const value = e.target.value;
+//     const newItems = [...formData.items];
+//     newItems[index].particulars = value;
+
+//     const info = getStockInfo(value);
+//     if (info.price > 0) {
+//       newItems[index].rate = info.price.toString();
+//       // Recalculate amount
+//       const qty = parseFloat(newItems[index].qty) || 0;
+//       newItems[index].amount = (qty * info.price).toFixed(2);
+//     }
+
+//     setFormData({ ...formData, items: newItems });
+//     calculateTotal(newItems);
+//   };
+
+//   const selectProduct = (name, index) => {
+//     const newItems = [...formData.items];
+//     newItems[index].particulars = name;
+
+//     const info = getStockInfo(name);
+//     if (info.price > 0) {
+//       newItems[index].rate = info.price.toString();
+//       const qty = parseFloat(newItems[index].qty) || 0;
+//       newItems[index].amount = (qty * info.price).toFixed(2);
+//     }
+
+//     setFormData({ ...formData, items: newItems });
+//     calculateTotal(newItems);
+//     setShowDropdown({ ...showDropdown, [index]: false });
+//   };
+
+//   // Close dropdowns
+//   useEffect(() => {
+//     const handleClickOutside = (e) => {
+//       dropdownRefs.current.forEach((ref, i) => {
+//         if (ref && !ref.contains(e.target)) {
+//           setShowDropdown(prev => ({ ...prev, [i]: false }));
+//         }
+//       });
+//     };
+//     document.addEventListener('mousedown', handleClickOutside);
+//     return () => document.removeEventListener('mousedown', handleClickOutside);
+//   }, []);
+
+//   // Handle input change
+//   const handleInputChange = (e, index = null) => {
+//     const { name, value } = e.target;
+//     if (index !== null) {
+//       const newItems = [...formData.items];
+//       newItems[index][name] = value;
+
+//       // Auto-calculate amount
+//       if (name === 'qty' || name === 'rate') {
+//         const qty = parseFloat(newItems[index].qty) || 0;
+//         const rate = parseFloat(newItems[index].rate) || 0;
+//         newItems[index].amount = (qty * rate).toFixed(2);
+//       }
+
+//       setFormData({ ...formData, items: newItems });
+//       calculateTotal(newItems);
+//     } else {
+//       setFormData({ ...formData, [name]: value });
+//     }
+//   };
+
+//   // Calculate total
+//   const calculateTotal = (items = formData.items) => {
+//     const total = items.reduce((sum, item) => sum + parseFloat(item.amount || 0), 0);
+//     setFormData(prev => ({ ...prev, totalAmount: total.toFixed(2) }));
+//   };
+
+//   // Add item
+//   const addItem = () => {
+//     setFormData({
+//       ...formData,
+//       items: [...formData.items, { no: formData.items.length + 1, particulars: '', qty: '', rate: '', amount: '' }],
+//     });
+//   };
+
+//   // Remove item
+//   const removeItem = (index) => {
+//     const newItems = formData.items.filter((_, i) => i !== index);
+//     setFormData({
+//       ...formData,
+//       items: newItems.map((item, i) => ({ ...item, no: i + 1 })),
+//     });
+//     calculateTotal(newItems);
+//   };
+
+//   // Submit bill
+//   const handleSubmit = async (e) => {
+//     e.preventDefault();
+//     try {
+//       const billData = {
+//         ...formData,
+//         items: formData.items.map((item, i) => ({
+//           no: i + 1,
+//           particulars: item.particulars,
+//           qty: parseInt(item.qty),
+//           rate: parseFloat(item.rate),
+//           amount: parseFloat(item.amount),
+//         })),
+//         totalAmount: parseFloat(formData.totalAmount),
+//       };
+
+//       if (editingId) {
+//         const res = await axios.put(`/api/bills/${editingId}`, billData);
+//         setBills(bills.map(b => b._id === editingId ? res.data : b));
+//         setEditingId(null);
+//         toast.success('Bill updated');
+//       } else {
+//         const res = await axios.post('/api/bills', billData);
+//         setBills([res.data, ...bills]);
+//         toast.success('Bill created');
+//       }
+//       resetForm();
+//     } catch (err) {
+//       toast.error(err.response?.data?.error || 'Bill failed');
+//     }
+//   };
+
+//   const resetForm = () => {
+//     setFormData({
+//       billId: '',
+//       customer: '',
+//       dueDate: '',
+//       items: [{ no: 1, particulars: '', qty: '', rate: '', amount: '' }],
+//       totalAmount: '',
+//     });
+//     setEditingId(null);
+//   };
+
+//   const handleEdit = (bill) => {
+//     setEditingId(bill._id);
+//     setFormData({
+//       billId: bill.billId,
+//       customer: bill.customer,
+//       dueDate: bill.dueDate.split('T')[0],
+//       items: bill.items.map((item, i) => ({
+//         no: i + 1,
+//         particulars: item.particulars,
+//         qty: item.qty.toString(),
+//         rate: item.rate.toString(),
+//         amount: item.amount.toFixed(2),
+//       })),
+//       totalAmount: bill.totalAmount.toFixed(2),
+//     });
+//   };
+
+//   const handleDelete = async (id) => {
+//     if (!confirm('Delete this bill?')) return;
+//     try {
+//       await axios.delete(`/api/bills/${id}`);
+//       setBills(bills.filter(b => b._id !== id));
+//       toast.success('Bill deleted');
+//     } catch (err) {
+//       toast.error('Delete failed');
+//     }
+//   };
+
+//   const handleSort = (field) => {
+//     setSortBy(field);
+//     setSortOrder(sortBy === field && sortOrder === 'asc' ? 'desc' : 'asc');
+//   };
+
+//   const printBill = () => window.print();
+
+//   return (
+//     <div className="min-h-screen bg-gradient-to-br from-violet-200 to-blue-200 p-6">
+//       <div className="bg-white shadow-xl rounded-lg p-8 max-w-7xl mx-auto">
+//         <h2 className="text-3xl font-bold text-gray-800 mb-6 no-print">Bills</h2>
+
+//         {/* Search */}
+//         <div className="mb-6 flex items-center gap-4 no-print">
+//           <div className="relative flex-1">
+//             <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+//             <input
+//               type="text"
+//               placeholder="Search by Bill ID or Customer"
+//               value={search}
+//               onChange={e => setSearch(e.target.value)}
+//               className="pl-10 p-3 border rounded-lg w-full focus:ring-2 focus:ring-blue-600"
+//             />
+//           </div>
+//         </div>
+
+//         {/* Form */}
+//         <form onSubmit={handleSubmit} className="mb-8 no-print">
+//           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+//             <div>
+//               <label className="block text-sm font-medium mb-1">Bill ID</label>
+//               <input type="text" name="billId" value={formData.billId} onChange={handleInputChange} required className="p-3 border rounded-lg w-full focus:ring-2 focus:ring-blue-600" />
+//             </div>
+//             <div>
+//               <label className="block text-sm font-medium mb-1">Customer</label>
+//               <input type="text" name="customer" value={formData.customer} onChange={handleInputChange} required className="p-3 border rounded-lg w-full focus:ring-2 focus:ring-blue-600" />
+//             </div>
+//             <div>
+//               <label className="block text-sm font-medium mb-1">Date</label>
+//               <input type="date" name="dueDate" value={formData.dueDate} onChange={handleInputChange} required className="p-3 border rounded-lg w-full focus:ring-2 focus:ring-blue-600" />
+//             </div>
+//           </div>
+
+//           <h3 className="text-xl font-semibold mb-4">Items</h3>
+//           <div className="overflow-x-auto mb-4">
+//             <table className="min-w-full divide-y divide-gray-200">
+//               <thead className="bg-indigo-900 text-white">
+//                 <tr>
+//                   <th className="px-6 py-3 text-left text-xs font-medium uppercase">No</th>
+//                   <th className="px-6 py-3 text-left text-xs font-medium uppercase">Particulars</th>
+//                   <th className="px-6 py-3 text-left text-xs font-medium uppercase">Qty</th>
+//                   <th className="px-6 py-3 text-left text-xs font-medium uppercase">Rate</th>
+//                   <th className="px-6 py-3 text-left text-xs font-medium uppercase">Amount</th>
+//                   <th className="px-6 py-3 text-left text-xs font-medium uppercase">Actions</th>
+//                 </tr>
+//               </thead>
+//               <tbody className="bg-white divide-y divide-gray-200">
+//                 {formData.items.map((item, index) => {
+//                   const stockInfo = getStockInfo(item.particulars);
+//                   return (
+//                     <tr key={index}>
+//                       <td className="px-6 py-4">{index + 1}</td>
+//                       <td className="px-6 py-4">
+//                         <div className="relative" ref={el => dropdownRefs.current[index] = el}>
+//                           <input
+//                             type="text"
+//                             value={item.particulars}
+//                             onChange={e => handleProductChange(e, index)}
+//                             onFocus={() => setShowDropdown({ ...showDropdown, [index]: true })}
+//                             placeholder="Select product"
+//                             required
+//                             className="p-3 pr-10 border rounded-lg w-full focus:ring-2 focus:ring-blue-600"
+//                           />
+//                           <FaChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" />
+
+//                           {showDropdown[index] && (
+//                             <div className="absolute z-50 w-full mt-1 bg-white border rounded-lg shadow-2xl max-h-64 overflow-y-auto">
+//                               {productOptions.map(name => {
+//                                 const info = getStockInfo(name);
+//                                 return (
+//                                   <div
+//                                     key={name}
+//                                     onClick={() => selectProduct(name, index)}
+//                                     className="px-4 py-3 hover:bg-blue-50 hover:text-blue-700 cursor-pointer border-b last:border-0"
+//                                   >
+//                                     <div className="flex justify-between">
+//                                       <span>{name}</span>
+//                                       <span className={`text-xs ${info.available > 0 ? 'text-green-600' : 'text-red-600'}`}>
+//                                         Stock: {info.available}
+//                                       </span>
+//                                     </div>
+//                                   </div>
+//                                 );
+//                               })}
+//                             </div>
+//                           )}
+//                         </div>
+//                       </td>
+//                       <td className="px-6 py-4">
+//                         <input type="number" name="qty" value={item.qty} onChange={e => handleInputChange(e, index)} min="1" required className="p-3 border rounded-lg w-full focus:ring-2 focus:ring-blue-600" />
+//                       </td>
+//                       <td className="px-6 py-4">
+//                         <input type="number" name="rate" value={item.rate} onChange={e => handleInputChange(e, index)} min="0" step="0.01" required placeholder="Auto-filled" className="p-3 border rounded-lg w-full bg-gray-50" />
+//                       </td>
+//                       <td className="px-6 py-4">
+//                         <input type="number" value={item.amount} disabled className="p-3 border rounded-lg w-full bg-gray-100" />
+//                       </td>
+//                       <td className="px-6 py-4">
+//                         {formData.items.length > 1 && (
+//                           <button type="button" onClick={() => removeItem(index)} className="text-red-600 hover:text-red-800">
+//                             <FaTimes />
+//                           </button>
+//                         )}
+//                       </td>
+//                     </tr>
+//                   );
+//                 })}
+//               </tbody>
+//             </table>
+//           </div>
+
+//           <button type="button" onClick={addItem} className="bg-green-600 text-white p-3 rounded-lg hover:bg-green-700 flex items-center gap-2 mb-6">
+//             <FaPlus /> Add Item
+//           </button>
+
+//           <div className="flex justify-between items-center">
+//             <div>
+//               <label className="block text-sm font-medium mb-1">Total Amount</label>
+//               <input type="number" value={formData.totalAmount} disabled className="p-3 border rounded-lg w-48 bg-gray-100 font-bold text-lg" />
+//             </div>
+//             <div className="flex gap-4">
+//               <button type="submit" className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700">
+//                 {editingId ? 'Update Bill' : 'Save Bill'}
+//               </button>
+//               <button type="button" onClick={printBill} className="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 flex items-center gap-2">
+//                 <FaPrint /> Print
+//               </button>
+//               {editingId && (
+//                 <button type="button" onClick={resetForm} className="bg-gray-600 text-white px-6 py-3 rounded-lg hover:bg-gray-700">
+//                   Cancel
+//                 </button>
+//               )}
+//             </div>
+//           </div>
+//         </form>
+
+//         {/* Bill Preview */}
+//         <div className="mt-12 p-8 border-2 border-gray-300 rounded-lg bg-white print-area">
+//           <div className="flex justify-between items-start mb-6">
+//             <img src="/Images/logo.png" alt="Nizon Tech" className="w-40" />
+//             <div className="text-right space-y-1">
+//               <p className="flex items-center justify-end gap-2"><FaWhatsapp className="text-green-500" /> 9846200284</p>
+//               <p className="flex items-center justify-end gap-2"><FaPhone className="text-blue-500" /> 8078200284</p>
+//               <p className="flex items-center justify-end gap-2"><FaMapMarkerAlt className="text-red-500" /> Near Canara Bank, KORATTY</p>
+//             </div>
+//           </div>
+//           <h1 className="text-4xl font-bold text-center my-6">BILL</h1>
+//           <div className="flex justify-between mb-6">
+//             <div>
+//               <p><strong>Bill ID:</strong> {formData.billId || 'N/A'}</p>
+//               <p><strong>Customer:</strong> {formData.customer || 'N/A'}</p>
+//             </div>
+//             <div>
+//               <p><strong>Date:</strong> {formData.dueDate ? new Date(formData.dueDate).toLocaleDateString() : 'N/A'}</p>
+//             </div>
+//           </div>
+
+//           <table className="min-w-full divide-y divide-gray-300">
+//             <thead className="bg-indigo-900 text-white">
+//               <tr>
+//                 <th className="px-6 py-3 text-left">No</th>
+//                 <th className="px-6 py-3 text-left">Particulars</th>
+//                 <th className="px-6 py-3 text-left">Qty</th>
+//                 <th className="px-6 py-3 text-left">Rate</th>
+//                 <th className="px-6 py-3 text-left">Amount Rs</th>
+//                 <th className="px-6 py-3 text-left">Ps</th>
+//               </tr>
+//             </thead>
+//             <tbody>
+//               {formData.items.map((item, i) => {
+//                 const amount = parseFloat(item.amount) || 0;
+//                 const rs = Math.floor(amount);
+//                 const ps = Math.round((amount - rs) * 100);
+//                 return (
+//                   <tr key={i}>
+//                     <td className="px-6 py-3">{i + 1}</td>
+//                     <td className="px-6 py-3">{item.particulars || '—'}</td>
+//                     <td className="px-6 py-3 text-center">{item.qty || '0'}</td>
+//                     <td className="px-6 py-3 text-right">{item.rate || '0'}</td>
+//                     <td className="px-6 py-3 text-right">{rs}</td>
+//                     <td className="px-6 py-3 text-right">{ps}</td>
+//                   </tr>
+//                 );
+//               })}
+//               <tr className="font-bold text-lg">
+//                 <td colSpan="4" className="px-6 py-4 text-right">Total</td>
+//                 <td className="px-6 py-4 text-right">{Math.floor(formData.totalAmount || 0)}</td>
+//                 <td className="px-6 py-4 text-right">{Math.round((parseFloat(formData.totalAmount || 0) - Math.floor(parseFloat(formData.totalAmount || 0))) * 100)}</td>
+//               </tr>
+//             </tbody>
+//           </table>
+
+//           <div className="flex justify-between mt-8 text-sm">
+//             <div>
+//               <p className="font-bold">BANK DETAILS</p>
+//               <p>NAME: ANTHONESE KD</p>
+//               <p>CANARA BANK KORATTY</p>
+//               <p>A/C NO: 3480101003736</p>
+//               <p>IFSC: CNRB0003480</p>
+//             </div>
+//             <div className="text-right">
+//               <p>Signature: ____________________</p>
+//             </div>
+//           </div>
+//         </div>
+
+//         {/* Saved Bills Table */}
+//         <h3 className="text-2xl font-bold mt-12 mb-4 no-print">Saved Bills</h3>
+//         <div className="overflow-x-auto no-print">
+//           <table className="min-w-full divide-y divide-gray-200">
+//             <thead className="bg-indigo-900 text-white">
+//               <tr>
+//                 <th onClick={() => handleSort('billId')} className="px-6 py-3 text-left cursor-pointer">Bill ID {sortBy === 'billId' && (sortOrder === 'asc' ? 'Up' : 'Down')}</th>
+//                 <th onClick={() => handleSort('customer')} className="px-6 py-3 text-left cursor-pointer">Customer {sortBy === 'customer' && (sortOrder === 'asc' ? 'Up' : 'Down')}</th>
+//                 <th onClick={() => handleSort('totalAmount')} className="px-6 py-3 text-left cursor-pointer">Total {sortBy === 'totalAmount' && (sortOrder === 'asc' ? 'Up' : 'Down')}</th>
+//                 <th onClick={() => handleSort('dueDate')} className="px-6 py-3 text-left cursor-pointer">Date {sortBy === 'dueDate' && (sortOrder === 'asc' ? 'Up' : 'Down')}</th>
+//                 <th className="px-6 py-3 text-left">Actions</th>
+//               </tr>
+//             </thead>
+//             <tbody>
+//               {bills.map(bill => (
+//                 <tr key={bill._id} className="hover:bg-gray-50">
+//                   <td className="px-6 py-4">{bill.billId}</td>
+//                   <td className="px-6 py-4">{bill.customer}</td>
+//                   <td className="px-6 py-4">₹{bill.totalAmount.toFixed(2)}</td>
+//                   <td className="px-6 py-4">{new Date(bill.dueDate).toLocaleDateString()}</td>
+//                   <td className="px-6 py-4 flex gap-3">
+//                     <button onClick={() => handleEdit(bill)} className="text-blue-600 hover:text-blue-800"><FaEdit /></button>
+//                     <button onClick={() => handleDelete(bill._id)} className="text-red-600 hover:text-red-800"><FaTrash /></button>
+//                   </td>
+//                 </tr>
+//               ))}
+//             </tbody>
+//           </table>
+//         </div>
+//       </div>
+//     </div>
+//   );
+// };
+
+// export default Bill;  
+
+
+// import axios from '../../axiosConfig';
+// import { useEffect, useState, useRef } from 'react';
+// import { toast } from 'react-toastify';
+// import { FaSearch, FaEdit, FaTrash, FaPlus, FaTimes, FaPrint, FaWhatsapp, FaPhone, FaMapMarkerAlt, FaChevronDown } from 'react-icons/fa';
+
+// const Bill = () => {
+//   const [bills, setBills] = useState([]);
+//   const [stocks, setStocks] = useState([]);
+
+//   // Default to today
+//   const today = new Date().toISOString().split('T')[0];
+
+//   const [formData, setFormData] = useState({
+//     billId: '',
+//     customer: '',
+//     dueDate: today, // Current date by default
+//     items: [{ no: 1, particulars: '', qty: '', rate: '', amount: '' }],
+//     totalAmount: '',
+//   });
+//   const [editingId, setEditingId] = useState(null);
+//   const [search, setSearch] = useState('');
+//   const [sortBy, setSortBy] = useState('dueDate');
+//   const [sortOrder, setSortOrder] = useState('desc');
+
+//   // Dropdown state
+//   const [showDropdown, setShowDropdown] = useState({});
+//   const dropdownRefs = useRef([]);
+
+//   // Fetch bills and stocks
+//   useEffect(() => {
+//     const fetchData = async () => {
+//       try {
+//         const [billsRes, stocksRes] = await Promise.all([
+//           axios.get(`/api/bills?search=${search}&sortBy=${sortBy}&order=${sortOrder}`),
+//           axios.get('/api/stocks'),
+//         ]);
+//         setBills(Array.isArray(billsRes.data) ? billsRes.data : []);
+//         setStocks(Array.isArray(stocksRes.data) ? stocksRes.data : []);
+//       } catch (err) {
+//         toast.error('Failed to load data');
+//       }
+//     };
+//     fetchData();
+//   }, [search, sortBy, sortOrder]);
+
+//   // Get stock info
+//   const getStockInfo = (name) => {
+//     const stock = stocks.find(s => s.stockName === name);
+//     return {
+//       available: stock ? stock.quantity : 0,
+//       price: stock?.salePrice || stock?.purchaseId?.salePrice || 0,
+//     };
+//   };
+
+//   const productOptions = [...new Set(stocks.map(s => s.stockName).filter(Boolean))].sort();
+
+//   // Handle product name change + auto-fill price
+//   const handleProductChange = (e, index) => {
+//     const value = e.target.value;
+//     const newItems = [...formData.items];
+//     newItems[index].particulars = value;
+
+//     const info = getStockInfo(value);
+//     if (info.price > 0) {
+//       newItems[index].rate = info.price.toString();
+//       const qty = parseFloat(newItems[index].qty) || 0;
+//       newItems[index].amount = (qty * info.price).toFixed(2);
+//     }
+
+//     setFormData({ ...formData, items: newItems });
+//     calculateTotal(newItems);
+//   };
+
+//   const selectProduct = (name, index) => {
+//     const newItems = [...formData.items];
+//     newItems[index].particulars = name;
+
+//     const info = getStockInfo(name);
+//     if (info.price > 0) {
+//       newItems[index].rate = info.price.toString();
+//       const qty = parseFloat(newItems[index].qty) || 0;
+//       newItems[index].amount = (qty * info.price).toFixed(2);
+//     }
+
+//     setFormData({ ...formData, items: newItems });
+//     calculateTotal(newItems);
+//     setShowDropdown({ ...showDropdown, [index]: false });
+//   };
+
+//   // Close dropdowns
+//   useEffect(() => {
+//     const handleClickOutside = (e) => {
+//       dropdownRefs.current.forEach((ref, i) => {
+//         if (ref && !ref.contains(e.target)) {
+//           setShowDropdown(prev => ({ ...prev, [i]: false }));
+//         }
+//       });
+//     };
+//     document.addEventListener('mousedown', handleClickOutside);
+//     return () => document.removeEventListener('mousedown', handleClickOutside);
+//   }, []);
+
+//   // Handle input change
+//   const handleInputChange = (e, index = null) => {
+//     const { name, value } = e.target;
+//     if (index !== null) {
+//       const newItems = [...formData.items];
+//       newItems[index][name] = value;
+
+//       if (name === 'qty' || name === 'rate') {
+//         const qty = parseFloat(newItems[index].qty) || 0;
+//         const rate = parseFloat(newItems[index].rate) || 0;
+//         newItems[index].amount = (qty * rate).toFixed(2);
+//       }
+
+//       setFormData({ ...formData, items: newItems });
+//       calculateTotal(newItems);
+//     } else {
+//       setFormData({ ...formData, [name]: value });
+//     }
+//   };
+
+//   // Calculate total
+//   const calculateTotal = (items = formData.items) => {
+//     const total = items.reduce((sum, item) => sum + parseFloat(item.amount || 0), 0);
+//     setFormData(prev => ({ ...prev, totalAmount: total.toFixed(2) }));
+//   };
+
+//   // Add item
+//   const addItem = () => {
+//     setFormData({
+//       ...formData,
+//       items: [...formData.items, { no: formData.items.length + 1, particulars: '', qty: '', rate: '', amount: '' }],
+//     });
+//   };
+
+//   // Remove item
+//   const removeItem = (index) => {
+//     const newItems = formData.items.filter((_, i) => i !== index);
+//     setFormData({
+//       ...formData,
+//       items: newItems.map((item, i) => ({ ...item, no: i + 1 })),
+//     });
+//     calculateTotal(newItems);
+//   };
+
+//   // Submit bill + reduce stock
+//   const handleSubmit = async (e) => {
+//     e.preventDefault();
+//     try {
+//       const billData = {
+//         ...formData,
+//         items: formData.items.map((item, i) => ({
+//           no: i + 1,
+//           particulars: item.particulars,
+//           qty: parseInt(item.qty),
+//           rate: parseFloat(item.rate),
+//           amount: parseFloat(item.amount),
+//         })),
+//         totalAmount: parseFloat(formData.totalAmount),
+//       };
+
+//       if (editingId) {
+//         const res = await axios.put(`/api/bills/${editingId}`, billData);
+//         setBills(bills.map(b => b._id === editingId ? res.data : b));
+//         setEditingId(null);
+//         toast.success('Bill updated');
+//       } else {
+//         const res = await axios.post('/api/bills', billData);
+//         setBills([res.data, ...bills]);
+//         toast.success('Bill created');
+
+//         // Reduce stock quantity
+//         const updatedStocks = stocks.map(stock => {
+//           const soldItem = billData.items.find(i => i.particulars === stock.stockName);
+//           if (soldItem) {
+//             return { ...stock, quantity: stock.quantity - soldItem.qty };
+//           }
+//           return stock;
+//         });
+//         setStocks(updatedStocks);
+//       }
+
+//       // Reset form with today as default
+//       setFormData({
+//         billId: '',
+//         customer: '',
+//         dueDate: today,
+//         items: [{ no: 1, particulars: '', qty: '', rate: '', amount: '' }],
+//         totalAmount: '',
+//       });
+//     } catch (err) {
+//       toast.error(err.response?.data?.error || 'Bill failed');
+//     }
+//   };
+
+//   const resetForm = () => {
+//     setFormData({
+//       billId: '',
+//       customer: '',
+//       dueDate: today,
+//       items: [{ no: 1, particulars: '', qty: '', rate: '', amount: '' }],
+//       totalAmount: '',
+//     });
+//     setEditingId(null);
+//   };
+
+//   const handleEdit = (bill) => {
+//     setEditingId(bill._id);
+//     setFormData({
+//       billId: bill.billId,
+//       customer: bill.customer,
+//       dueDate: bill.dueDate.split('T')[0],
+//       items: bill.items.map((item, i) => ({
+//         no: i + 1,
+//         particulars: item.particulars,
+//         qty: item.qty.toString(),
+//         rate: item.rate.toString(),
+//         amount: item.amount.toFixed(2),
+//       })),
+//       totalAmount: bill.totalAmount.toFixed(2),
+//     });
+//   };
+
+//   const handleDelete = async (id) => {
+//     if (!confirm('Delete this bill?')) return;
+//     try {
+//       await axios.delete(`/api/bills/${id}`);
+//       setBills(bills.filter(b => b._id !== id));
+//       toast.success('Bill deleted');
+//     } catch (err) {
+//       toast.error('Delete failed');
+//     }
+//   };
+
+//   const handleSort = (field) => {
+//     setSortBy(field);
+//     setSortOrder(sortBy === field && sortOrder === 'asc' ? 'desc' : 'asc');
+//   };
+
+//   const printBill = () => window.print();
+
+//   return (
+//     <div className="min-h-screen bg-gradient-to-br from-violet-200 to-blue-200 p-6">
+//       <div className="bg-white shadow-xl rounded-lg p-8 max-w-7xl mx-auto">
+//         <h2 className="text-3xl font-bold text-gray-800 mb-6 no-print">Bills</h2>
+
+//         {/* Search */}
+//         <div className="mb-6 flex items-center gap-4 no-print">
+//           <div className="relative flex-1">
+//             <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+//             <input
+//               type="text"
+//               placeholder="Search by Bill ID or Customer"
+//               value={search}
+//               onChange={e => setSearch(e.target.value)}
+//               className="pl-10 p-3 border rounded-lg w-full focus:ring-2 focus:ring-blue-600"
+//             />
+//           </div>
+//         </div>
+
+//         {/* Form */}
+//         <form onSubmit={handleSubmit} className="mb-8 no-print">
+//           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+//             <div>
+//               <label className="block text-sm font-medium mb-1">Bill ID</label>
+//               <input type="text" name="billId" value={formData.billId} onChange={handleInputChange} required className="p-3 border rounded-lg w-full focus:ring-2 focus:ring-blue-600" />
+//             </div>
+//             <div>
+//               <label className="block text-sm font-medium mb-1">Customer</label>
+//               <input type="text" name="customer" value={formData.customer} onChange={handleInputChange} required className="p-3 border rounded-lg w-full focus:ring-2 focus:ring-blue-600" />
+//             </div>
+//             <div>
+//               <label className="block text-sm font-medium mb-1">Date</label>
+//               <input type="date" name="dueDate" value={formData.dueDate} onChange={handleInputChange} required className="p-3 border rounded-lg w-full focus:ring-2 focus:ring-blue-600" />
+//             </div>
+//           </div>
+
+//           <h3 className="text-xl font-semibold mb-4">Items</h3>
+//           <div className="overflow-x-auto mb-4">
+//             <table className="min-w-full divide-y divide-gray-200">
+//               <thead className="bg-indigo-900 text-white">
+//                 <tr>
+//                   <th className="px-6 py-3 text-left text-xs font-medium uppercase">No</th>
+//                   <th className="px-6 py-3 text-left text-xs font-medium uppercase">Particulars</th>
+//                   <th className="px-6 py-3 text-left text-xs font-medium uppercase">Qty</th>
+//                   <th className="px-6 py-3 text-left text-xs font-medium uppercase">Rate</th>
+//                   <th className="px-6 py-3 text-left text-xs font-medium uppercase">Amount</th>
+//                   <th className="px-6 py-3 text-left text-xs font-medium uppercase">Actions</th>
+//                 </tr>
+//               </thead>
+//               <tbody className="bg-white divide-y divide-gray-200">
+//                 {formData.items.map((item, index) => {
+//                   const stockInfo = getStockInfo(item.particulars);
+//                   return (
+//                     <tr key={index}>
+//                       <td className="px-6 py-4">{index + 1}</td>
+//                       <td className="px-6 py-4">
+//                         <div className="relative" ref={el => dropdownRefs.current[index] = el}>
+//                           <input
+//                             type="text"
+//                             value={item.particulars}
+//                             onChange={e => handleProductChange(e, index)}
+//                             onFocus={() => setShowDropdown({ ...showDropdown, [index]: true })}
+//                             placeholder="Select product"
+//                             required
+//                             className="p-3 pr-10 border rounded-lg w-full focus:ring-2 focus:ring-blue-600"
+//                           />
+//                           <FaChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" />
+//                           {showDropdown[index] && (
+//                             <div className="absolute z-50 w-full mt-1 bg-white border rounded-lg shadow-2xl max-h-64 overflow-y-auto">
+//                               {productOptions.map(name => {
+//                                 const info = getStockInfo(name);
+//                                 return (
+//                                   <div
+//                                     key={name}
+//                                     onClick={() => selectProduct(name, index)}
+//                                     className="px-4 py-3 hover:bg-blue-50 hover:text-blue-700 cursor-pointer border-b last:border-0"
+//                                   >
+//                                     <div className="flex justify-between">
+//                                       <span>{name}</span>
+//                                       <span className={`text-xs ${info.available > 0 ? 'text-green-600' : 'text-red-600'}`}>
+//                                         Stock: {info.available}
+//                                       </span>
+//                                     </div>
+//                                   </div>
+//                                 );
+//                               })}
+//                             </div>
+//                           )}
+//                         </div>
+//                       </td>
+//                       <td className="px-6 py-4">
+//                         <input type="number" name="qty" value={item.qty} onChange={e => handleInputChange(e, index)} min="1" required className="p-3 border rounded-lg w-full focus:ring-2 focus:ring-blue-600" />
+//                       </td>
+//                       <td className="px-6 py-4">
+//                         <input type="number" name="rate" value={item.rate} onChange={e => handleInputChange(e, index)} min="0" step="0.01" required placeholder="Auto-filled" className="p-3 border rounded-lg w-full bg-gray-50" />
+//                       </td>
+//                       <td className="px-6 py-4">
+//                         <input type="number" value={item.amount} disabled className="p-3 border rounded-lg w-full bg-gray-100" />
+//                       </td>
+//                       <td className="px-6 py-4">
+//                         {formData.items.length > 1 && (
+//                           <button type="button" onClick={() => removeItem(index)} className="text-red-600 hover:text-red-800">
+//                             <FaTimes />
+//                           </button>
+//                         )}
+//                       </td>
+//                     </tr>
+//                   );
+//                 })}
+//               </tbody>
+//             </table>
+//           </div>
+
+//           <button type="button" onClick={addItem} className="bg-green-600 text-white p-3 rounded-lg hover:bg-green-700 flex items-center gap-2 mb-6">
+//             <FaPlus /> Add Item
+//           </button>
+
+//           <div className="flex justify-between items-center">
+//             <div>
+//               <label className="block text-sm font-medium mb-1">Total Amount</label>
+//               <input type="number" value={formData.totalAmount} disabled className="p-3 border rounded-lg w-48 bg-gray-100 font-bold text-lg" />
+//             </div>
+//             <div className="flex gap-4">
+//               <button type="submit" className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700">
+//                 {editingId ? 'Update Bill' : 'Save Bill'}
+//               </button>
+//               <button type="button" onClick={printBill} className="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 flex items-center gap-2">
+//                 <FaPrint /> Print
+//               </button>
+//               {editingId && (
+//                 <button type="button" onClick={resetForm} className="bg-gray-600 text-white px-6 py-3 rounded-lg hover:bg-gray-700">
+//                   Cancel
+//                 </button>
+//               )}
+//             </div>
+//           </div>
+//         </form>
+
+//         {/* Bill Preview */}
+//         <div className="mt-12 p-8 border-2 border-gray-300 rounded-lg bg-white print-area">
+//           <div className="flex justify-between items-start mb-6">
+//             <img src="/Images/logo.png" alt="Nizon Tech" className="w-40" />
+//             <div className="text-right space-y-1">
+//               <p className="flex items-center justify-end gap-2"><FaWhatsapp className="text-green-500" /> 9846200284</p>
+//               <p className="flex items-center justify-end gap-2"><FaPhone className="text-blue-500" /> 8078200284</p>
+//               <p className="flex items-center justify-end gap-2"><FaMapMarkerAlt className="text-red-500" /> Near Canara Bank, KORATTY</p>
+//             </div>
+//           </div>
+//           <h1 className="text-4xl font-bold text-center my-6">BILL</h1>
+//           <div className="flex justify-between mb-6">
+//             <div>
+//               <p><strong>Bill ID:</strong> {formData.billId || 'N/A'}</p>
+//               <p><strong>Customer:</strong> {formData.customer || 'N/A'}</p>
+//             </div>
+//             <div>
+//               <p><strong>Date:</strong> {formData.dueDate ? new Date(formData.dueDate).toLocaleDateString() : 'N/A'}</p>
+//             </div>
+//           </div>
+
+//           <table className="min-w-full divide-y divide-gray-300">
+//             <thead className="bg-indigo-900 text-white">
+//               <tr>
+//                 <th className="px-6 py-3 text-left">No</th>
+//                 <th className="px-6 py-3 text-left">Particulars</th>
+//                 <th className="px-6 py-3 text-left">Qty</th>
+//                 <th className="px-6 py-3 text-left">Rate</th>
+//                 <th className="px-6 py-3 text-left">Amount Rs</th>
+//                 <th className="px-6 py-3 text-left">Ps</th>
+//               </tr>
+//             </thead>
+//             <tbody>
+//               {formData.items.map((item, i) => {
+//                 const amount = parseFloat(item.amount) || 0;
+//                 const rs = Math.floor(amount);
+//                 const ps = Math.round((amount - rs) * 100);
+//                 return (
+//                   <tr key={i}>
+//                     <td className="px-6 py-3">{i + 1}</td>
+//                     <td className="px-6 py-3">{item.particulars || '—'}</td>
+//                     <td className="px-6 py-3 text-center">{item.qty || '0'}</td>
+//                     <td className="px-6 py-3 text-right">{item.rate || '0'}</td>
+//                     <td className="px-6 py-3 text-right">{rs}</td>
+//                     <td className="px-6 py-3 text-right">{ps}</td>
+//                   </tr>
+//                 );
+//               })}
+//               <tr className="font-bold text-lg">
+//                 <td colSpan="4" className="px-6 py-4 text-right">Total</td>
+//                 <td className="px-6 py-4 text-right">{Math.floor(formData.totalAmount || 0)}</td>
+//                 <td className="px-6 py-4 text-right">{Math.round((parseFloat(formData.totalAmount || 0) - Math.floor(parseFloat(formData.totalAmount || 0))) * 100)}</td>
+//               </tr>
+//             </tbody>
+//           </table>
+
+//           <div className="flex justify-between mt-8 text-sm">
+//             <div>
+//               <p className="font-bold">BANK DETAILS</p>
+//               <p>NAME: ANTHONESE KD</p>
+//               <p>CANARA BANK KORATTY</p>
+//               <p>A/C NO: 3480101003736</p>
+//               <p>IFSC: CNRB0003480</p>
+//             </div>
+//             <div className="text-right">
+//               <p>Signature: ____________________</p>
+//             </div>
+//           </div>
+//         </div>
+
+//         {/* Saved Bills Table */}
+//         <h3 className="text-2xl font-bold mt-12 mb-4 no-print">Saved Bills</h3>
+//         <div className="overflow-x-auto no-print">
+//           <table className="min-w-full divide-y divide-gray-200">
+//             <thead className="bg-indigo-900 text-white">
+//               <tr>
+//                 <th onClick={() => handleSort('billId')} className="px-6 py-3 text-left cursor-pointer">Bill ID {sortBy === 'billId' && (sortOrder === 'asc' ? 'Up' : 'Down')}</th>
+//                 <th onClick={() => handleSort('customer')} className="px-6 py-3 text-left cursor-pointer">Customer {sortBy === 'customer' && (sortOrder === 'asc' ? 'Up' : 'Down')}</th>
+//                 <th onClick={() => handleSort('totalAmount')} className="px-6 py-3 text-left cursor-pointer">Total {sortBy === 'totalAmount' && (sortOrder === 'asc' ? 'Up' : 'Down')}</th>
+//                 <th onClick={() => handleSort('dueDate')} className="px-6 py-3 text-left cursor-pointer">Date {sortBy === 'dueDate' && (sortOrder === 'asc' ? 'Up' : 'Down')}</th>
+//                 <th className="px-6 py-3 text-left">Actions</th>
+//               </tr>
+//             </thead>
+//             <tbody>
+//               {bills.map(bill => (
+//                 <tr key={bill._id} className="hover:bg-gray-50">
+//                   <td className="px-6 py-4">{bill.billId}</td>
+//                   <td className="px-6 py-4">{bill.customer}</td>
+//                   <td className="px-6 py-4">₹{bill.totalAmount.toFixed(2)}</td>
+//                   <td className="px-6 py-4">{new Date(bill.dueDate).toLocaleDateString()}</td>
+//                   <td className="px-6 py-4 flex gap-3">
+//                     <button onClick={() => handleEdit(bill)} className="text-blue-600 hover:text-blue-800"><FaEdit /></button>
+//                     <button onClick={() => handleDelete(bill._id)} className="text-red-600 hover:text-red-800"><FaTrash /></button>
+//                   </td>
+//                 </tr>
+//               ))}
+//             </tbody>
+//           </table>
+//         </div>
+//       </div>
+//     </div>
+//   );
+// };
+
+// export default Bill;
+
+
+
+
+
+
+
+
+
+// import axios from '../../axiosConfig';
+// import { useEffect, useState, useRef } from 'react';
+// import { toast } from 'react-toastify';
+// import { FaSearch, FaEdit, FaTrash, FaPlus, FaTimes, FaPrint, FaWhatsapp, FaPhone, FaMapMarkerAlt, FaChevronDown } from 'react-icons/fa';
+
+// const Bill = () => {
+//   const [bills, setBills] = useState([]);
+//   const [stocks, setStocks] = useState([]);
+
+//   const today = new Date().toISOString().split('T')[0];
+
+//   const [formData, setFormData] = useState({
+//     billId: '',
+//     customer: '',
+//     dueDate: today,
+//     items: [{ no: 1, particulars: '', qty: '', rate: '', amount: '' }],
+//     totalAmount: '',
+//   });
+
+//   const [editingId, setEditingId] = useState(null);
+//   const [search, setSearch] = useState('');
+//   const [sortBy, setSortBy] = useState('dueDate');
+//   const [sortOrder, setSortOrder] = useState('desc');
+
+//   const [showDropdown, setShowDropdown] = useState({});
+//   const dropdownRefs = useRef([]);
+
+//   useEffect(() => {
+//     const fetchData = async () => {
+//       try {
+//         const [billsRes, stocksRes] = await Promise.all([
+//           axios.get(`/api/bills?search=${search}&sortBy=${sortBy}&order=${sortOrder}`),
+//           axios.get('/api/stocks'),
+//         ]);
+//         setBills(Array.isArray(billsRes.data) ? billsRes.data : []);
+//         setStocks(Array.isArray(stocksRes.data) ? stocksRes.data : []);
+//       } catch (err) {
+//         toast.error('Failed to load data');
+//       }
+//     };
+//     fetchData();
+//   }, [search, sortBy, sortOrder]);
+
+//   const getStockInfo = (name) => {
+//     const stock = stocks.find(s => s.stockName === name);
+//     return {
+//       available: stock ? stock.quantity : 0,
+//       price: stock?.salePrice || stock?.purchaseId?.salePrice || 0,
+//     };
+//   };
+
+//   const productOptions = [...new Set(stocks.map(s => s.stockName).filter(Boolean))].sort();
+
+//   const handleProductChange = (e, index) => {
+//     const value = e.target.value;
+//     const newItems = [...formData.items];
+//     newItems[index].particulars = value;
+
+//     const info = getStockInfo(value);
+//     if (info.price > 0) {
+//       newItems[index].rate = info.price.toString();
+//       const qty = parseFloat(newItems[index].qty) || 0;
+//       newItems[index].amount = (qty * info.price).toFixed(2);
+//     }
+
+//     setFormData({ ...formData, items: newItems });
+//     calculateTotal(newItems);
+//   };
+
+//   const selectProduct = (name, index) => {
+//     const newItems = [...formData.items];
+//     newItems[index].particulars = name;
+
+//     const info = getStockInfo(name);
+//     if (info.price > 0) {
+//       newItems[index].rate = info.price.toString();
+//       const qty = parseFloat(newItems[index].qty) || 0;
+//       newItems[index].amount = (qty * info.price).toFixed(2);
+//     }
+
+//     setFormData({ ...formData, items: newItems });
+//     calculateTotal(newItems);
+//     setShowDropdown({ ...showDropdown, [index]: false });
+//   };
+
+//   useEffect(() => {
+//     const handleClickOutside = (e) => {
+//       dropdownRefs.current.forEach((ref, i) => {
+//         if (ref && !ref.contains(e.target)) {
+//           setShowDropdown(prev => ({ ...prev, [i]: false }));
+//         }
+//       });
+//     };
+//     document.addEventListener('mousedown', handleClickOutside);
+//     return () => document.removeEventListener('mousedown', handleClickOutside);
+//   }, []);
+
+//   const handleInputChange = (e, index = null) => {
+//     const { name, value } = e.target;
+//     if (index !== null) {
+//       const newItems = [...formData.items];
+//       newItems[index][name] = value;
+
+//       if (name === 'qty' || name === 'rate') {
+//         const qty = parseFloat(newItems[index].qty) || 0;
+//         const rate = parseFloat(newItems[index].rate) || 0;
+//         newItems[index].amount = (qty * rate).toFixed(2);
+//       }
+
+//       setFormData({ ...formData, items: newItems });
+//       calculateTotal(newItems);
+//     } else {
+//       setFormData({ ...formData, [name]: value });
+//     }
+//   };
+
+//   const calculateTotal = (items = formData.items) => {
+//     const total = items.reduce((sum, item) => sum + parseFloat(item.amount || 0), 0);
+//     setFormData(prev => ({ ...prev, totalAmount: total.toFixed(2) }));
+//   };
+
+//   const addItem = () => {
+//     setFormData({
+//       ...formData,
+//       items: [...formData.items, { no: formData.items.length + 1, particulars: '', qty: '', rate: '', amount: '' }],
+//     });
+//   };
+
+//   const removeItem = (index) => {
+//     const newItems = formData.items.filter((_, i) => i !== index);
+//     setFormData({
+//       ...formData,
+//       items: newItems.map((item, i) => ({ ...item, no: i + 1 })),
+//     });
+//     calculateTotal(newItems);
+//   };
+
+//   const validateStock = () => {
+//     for (const item of formData.items) {
+//       if (!item.particulars || !item.qty) continue;
+//       const info = getStockInfo(item.particulars);
+//       const qty = parseInt(item.qty);
+//       if (qty > info.available) {
+//         toast.error(`Only ${info.available} "${item.particulars}" available in stock`);
+//         return false;
+//       }
+//     }
+//     return true;
+//   };
+
+//   const handleSubmit = async (e) => {
+//     e.preventDefault();
+//     if (!validateStock()) return;
+
+//     try {
+//       const billData = {
+//         ...formData,
+//         items: formData.items
+//           .filter(i => i.particulars && i.qty)
+//           .map((item, i) => ({
+//             no: i + 1,
+//             particulars: item.particulars,
+//             qty: parseInt(item.qty),
+//             rate: parseFloat(item.rate),
+//             amount: parseFloat(item.amount),
+//           })),
+//         totalAmount: parseFloat(formData.totalAmount),
+//       };
+
+//       if (editingId) {
+//         const res = await axios.put(`/api/bills/${editingId}`, billData);
+//         setBills(bills.map(b => b._id === editingId ? res.data : b));
+//         toast.success('Bill updated');
+//       } else {
+//         const billRes = await axios.post('/api/bills', billData);
+//         setBills([billRes.data, ...bills]);
+//         toast.success('Bill created');
+
+//         const saleData = {
+//           date: formData.dueDate,
+//           billId: billRes.data.billId,
+//           items: billData.items.map(i => ({
+//             stockName: i.particulars,
+//             quantity: i.qty,
+//             price: i.rate,
+//           })),
+//         };
+//         await axios.post('/api/sales', saleData);
+
+//         const updatedStocks = stocks.map(stock => {
+//           const sold = billData.items.find(i => i.particulars === stock.stockName);
+//           if (sold) {
+//             return { ...stock, quantity: stock.quantity - sold.qty };
+//           }
+//           return stock;
+//         });
+//         setStocks(updatedStocks);
+//       }
+
+//       setFormData({
+//         billId: '',
+//         customer: '',
+//         dueDate: today,
+//         items: [{ no: 1, particulars: '', qty: '', rate: '', amount: '' }],
+//         totalAmount: '',
+//       });
+//       setEditingId(null);
+//     } catch (err) {
+//       toast.error(err.response?.data?.error || 'Failed to save bill');
+//     }
+//   };
+
+//   const resetForm = () => {
+//     setFormData({
+//       billId: '',
+//       customer: '',
+//       dueDate: today,
+//       items: [{ no: 1, particulars: '', qty: '', rate: '', amount: '' }],
+//       totalAmount: '',
+//     });
+//     setEditingId(null);
+//   };
+
+//   const handleEdit = (bill) => {
+//     setEditingId(bill._id);
+//     setFormData({
+//       billId: bill.billId,
+//       customer: bill.customer,
+//       dueDate: bill.dueDate.split('T')[0],
+//       items: bill.items.map((item, i) => ({
+//         no: i + 1,
+//         particulars: item.particulars,
+//         qty: item.qty.toString(),
+//         rate: item.rate.toString(),
+//         amount: item.amount.toFixed(2),
+//       })),
+//       totalAmount: bill.totalAmount.toFixed(2),
+//     });
+//   };
+
+//   const handleDelete = async (id) => {
+//     if (!confirm('Delete this bill?')) return;
+//     try {
+//       await axios.delete(`/api/bills/${id}`);
+//       setBills(bills.filter(b => b._id !== id));
+//       toast.success('Bill deleted');
+//     } catch (err) {
+//       toast.error('Delete failed');
+//     }
+//   };
+
+//   const handleSort = (field) => {
+//     setSortBy(field);
+//     setSortOrder(sortBy === field && sortOrder === 'asc' ? 'desc' : 'asc');
+//   };
+
+//   const printBill = () => {
+//     window.print();
+//   };
+
+//   return (
+//     <>
+//       {/* Print-specific styles */}
+//       <style jsx>{`
+//         @media print {
+//           body * {
+//             visibility: hidden;
+//           }
+//           .print-area, .print-area * {
+//             visibility: visible;
+//           }
+//           .print-area {
+//             position: absolute;
+//             left: 0;
+//             top: 0;
+//             width: 100%;
+//             padding: 20px;
+//             background: white;
+//             border: none;
+//             box-shadow: none;
+//           }
+//           .no-print {
+//             display: none !important;
+//           }
+//           /* Clean print layout */
+//           table {
+//             width: 100%;
+//             border-collapse: collapse;
+//           }
+//           th, td {
+//             border: 1px solid #000;
+//             padding: 8px;
+//             text-align: left;
+//           }
+//           th {
+//             background-color: #f0f0f0;
+//           }
+//           h1 {
+//             text-align: center;
+//             font-size: 32px;
+//             margin: 20px 0;
+//           }
+//         }
+//       `}</style>
+
+//       <div className="min-h-screen bg-gradient-to-br from-violet-200 to-blue-200 p-6">
+//         <div className="bg-white shadow-xl rounded-lg p-8 max-w-7xl mx-auto">
+//           <h2 className="text-3xl font-bold text-gray-800 mb-6 no-print">Bills</h2>
+
+//           {/* Search */}
+//           <div className="mb-6 flex items-center gap-4 no-print">
+//             <div className="relative flex-1">
+//               <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+//               <input
+//                 type="text"
+//                 placeholder="Search by Bill ID or Customer"
+//                 value={search}
+//                 onChange={e => setSearch(e.target.value)}
+//                 className="pl-10 p-3 border rounded-lg w-full focus:ring-2 focus:ring-blue-600"
+//               />
+//             </div>
+//           </div>
+
+//           {/* Form */}
+//           <form onSubmit={handleSubmit} className="mb-8 no-print">
+//             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+//               <div>
+//                 <label className="block text-sm font-medium mb-1">Bill ID</label>
+//                 <input type="text" name="billId" value={formData.billId} onChange={handleInputChange} required className="p-3 border rounded-lg w-full focus:ring-2 focus:ring-blue-600" />
+//               </div>
+//               <div>
+//                 <label className="block text-sm font-medium mb-1">Customer</label>
+//                 <input type="text" name="customer" value={formData.customer} onChange={handleInputChange} required className="p-3 border rounded-lg w-full focus:ring-2 focus:ring-blue-600" />
+//               </div>
+//               <div>
+//                 <label className="block text-sm font-medium mb-1">Date</label>
+//                 <input type="date" name="dueDate" value={formData.dueDate} onChange={handleInputChange} required className="p-3 border rounded-lg w-full focus:ring-2 focus:ring-blue-600" />
+//               </div>
+//             </div>
+
+//             <h3 className="text-xl font-semibold mb-4">Items</h3>
+//             <div className="overflow-x-auto mb-4">
+//               <table className="min-w-full divide-y divide-gray-200">
+//                 <thead className="bg-indigo-900 text-white">
+//                   <tr>
+//                     <th className="px-6 py-3 text-left text-xs font-medium uppercase">No</th>
+//                     <th className="px-6 py-3 text-left text-xs font-medium uppercase">Particulars</th>
+//                     <th className="px-6 py-3 text-left text-xs font-medium uppercase">Qty</th>
+//                     <th className="px-6 py-3 text-left text-xs font-medium uppercase">Rate</th>
+//                     <th className="px-6 py-3 text-left text-xs font-medium uppercase">Amount</th>
+//                     <th className="px-6 py-3 text-left text-xs font-medium uppercase">Actions</th>
+//                   </tr>
+//                 </thead>
+//                 <tbody className="bg-white divide-y divide-gray-200">
+//                   {formData.items.map((item, index) => {
+//                     const info = getStockInfo(item.particulars);
+//                     return (
+//                       <tr key={index}>
+//                         <td className="px-6 py-4">{index + 1}</td>
+//                         <td className="px-6 py-4">
+//                           <div className="relative" ref={el => dropdownRefs.current[index] = el}>
+//                             <input
+//                               type="text"
+//                               value={item.particulars}
+//                               onChange={e => handleProductChange(e, index)}
+//                               onFocus={() => setShowDropdown({ ...showDropdown, [index]: true })}
+//                               placeholder="Select product"
+//                               required
+//                               className="p-3 pr-10 border rounded-lg w-full focus:ring-2 focus:ring-blue-600"
+//                             />
+//                             <FaChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" />
+//                             {showDropdown[index] && (
+//                               <div className="absolute z-50 w-full mt-1 bg-white border rounded-lg shadow-2xl max-h-64 overflow-y-auto">
+//                                 {productOptions.map(name => {
+//                                   const info = getStockInfo(name);
+//                                   return (
+//                                     <div
+//                                       key={name}
+//                                       onClick={() => selectProduct(name, index)}
+//                                       className="px-4 py-3 hover:bg-blue-50 hover:text-blue-700 cursor-pointer border-b last:border-0"
+//                                     >
+//                                       <div className="flex justify-between">
+//                                         <span>{name}</span>
+//                                         <span className={`text-xs ${info.available > 0 ? 'text-green-600' : 'text-red-600'}`}>
+//                                           Stock: {info.available}
+//                                         </span>
+//                                       </div>
+//                                     </div>
+//                                   );
+//                                 })}
+//                               </div>
+//                             )}
+//                           </div>
+//                         </td>
+//                         <td className="px-6 py-4">
+//                           <input type="number" name="qty" value={item.qty} onChange={e => handleInputChange(e, index)} min="1" max={info.available || undefined} required className="p-3 border rounded-lg w-full focus:ring-2 focus:ring-blue-600" />
+//                         </td>
+//                         <td className="px-6 py-4">
+//                           <input type="number" name="rate" value={item.rate} onChange={e => handleInputChange(e, index)} min="0" step="0.01" required placeholder="Auto-filled" className="p-3 border rounded-lg w-full bg-gray-50" />
+//                         </td>
+//                         <td className="px-6 py-4">
+//                           <input type="number" value={item.amount} disabled className="p-3 border rounded-lg w-full bg-gray-100" />
+//                         </td>
+//                         <td className="px-6 py-4">
+//                           {formData.items.length > 1 && (
+//                             <button type="button" onClick={() => removeItem(index)} className="text-red-600 hover:text-red-800">
+//                               <FaTimes />
+//                             </button>
+//                           )}
+//                         </td>
+//                       </tr>
+//                     );
+//                   })}
+//                 </tbody>
+//               </table>
+//             </div>
+
+//             <button type="button" onClick={addItem} className="bg-green-600 text-white p-3 rounded-lg hover:bg-green-700 flex items-center gap-2 mb-6">
+//               <FaPlus /> Add Item
+//             </button>
+
+//             <div className="flex justify-between items-center">
+//               <div>
+//                 <label className="block text-sm font-medium mb-1">Total Amount</label>
+//                 <input type="number" value={formData.totalAmount} disabled className="p-3 border rounded-lg w-48 bg-gray-100 font-bold text-lg" />
+//               </div>
+//               <div className="flex gap-4">
+//                 <button type="submit" className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700">
+//                   {editingId ? 'Update Bill' : 'Save Bill'}
+//                 </button>
+//                 <button type="button" onClick={printBill} className="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 flex items-center gap-2">
+//                   <FaPrint /> Print
+//                 </button>
+//                 {editingId && (
+//                   <button type="button" onClick={resetForm} className="bg-gray-600 text-white px-6 py-3 rounded-lg hover:bg-gray-700">
+//                     Cancel
+//                   </button>
+//                 )}
+//               </div>
+//             </div>
+//           </form>
+
+//           {/* Bill Preview — This is what gets printed */}
+//           <div className="mt-12 p-8 bg-white print-area">
+//             <div className="flex justify-between items-start mb-6">
+//               <img src="/Images/logo.png" alt="Nizon Tech" className="w-40" />
+//               <div className="text-right space-y-1">
+//                 <p className="flex items-center justify-end gap-2"><FaWhatsapp className="text-green-500" /> 9846200284</p>
+//                 <p className="flex items-center justify-end gap-2"><FaPhone className="text-blue-500" /> 8078200284</p>
+//                 <p className="flex items-center justify-end gap-2"><FaMapMarkerAlt className="text-red-500" /> Near Canara Bank, KORATTY</p>
+//               </div>
+//             </div>
+//             <h1 className="text-4xl font-bold text-center my-8">BILL</h1>
+//             <div className="flex justify-between mb-6">
+//               <div>
+//                 <p><strong>Bill ID:</strong> {formData.billId || 'N/A'}</p>
+//                 <p><strong>Customer:</strong> {formData.customer || 'N/A'}</p>
+//               </div>
+//               <div>
+//                 <p><strong>Date:</strong> {formData.dueDate ? new Date(formData.dueDate).toLocaleDateString() : 'N/A'}</p>
+//               </div>
+//             </div>
+
+//             <table className="min-w-full divide-y divide-gray-300 mb-8">
+//               <thead className="bg-indigo-900 text-white">
+//                 <tr>
+//                   <th className="px-6 py-3 text-left">No</th>
+//                   <th className="px-6 py-3 text-left">Particulars</th>
+//                   <th className="px-6 py-3 text-left">Qty</th>
+//                   <th className="px-6 py-3 text-left">Rate</th>
+//                   <th className="px-6 py-3 text-left">Amount Rs</th>
+//                   <th className="px-6 py-3 text-left">Ps</th>
+//                 </tr>
+//               </thead>
+//               <tbody>
+//                 {formData.items.map((item, i) => {
+//                   const amount = parseFloat(item.amount) || 0;
+//                   const rs = Math.floor(amount);
+//                   const ps = Math.round((amount - rs) * 100);
+//                   return (
+//                     <tr key={i}>
+//                       <td className="px-6 py-3">{i + 1}</td>
+//                       <td className="px-6 py-3">{item.particulars || '—'}</td>
+//                       <td className="px-6 py-3 text-center">{item.qty || '0'}</td>
+//                       <td className="px-6 py-3 text-right">{item.rate || '0'}</td>
+//                       <td className="px-6 py-3 text-right">{rs}</td>
+//                       <td className="px-6 py-3 text-right">{ps}</td>
+//                     </tr>
+//                   );
+//                 })}
+//                 <tr className="font-bold text-lg border-t-2 border-black">
+//                   <td colSpan="4" className="px-6 py-4 text-right">Total</td>
+//                   <td className="px-6 py-4 text-right">{Math.floor(formData.totalAmount || 0)}</td>
+//                   <td className="px-6 py-4 text-right">{Math.round((parseFloat(formData.totalAmount || 0) - Math.floor(parseFloat(formData.totalAmount || 0))) * 100)}</td>
+//                 </tr>
+//               </tbody>
+//             </table>
+
+//             <div className="flex justify-between mt-12 text-sm">
+//               <div>
+//                 <p className="font-bold text-lg">BANK DETAILS</p>
+//                 <p>NAME: ANTHONESE KD</p>
+//                 <p>CANARA BANK KORATTY</p>
+//                 <p>A/C NO: 3480101003736</p>
+//                 <p>IFSC: CNRB0003480</p>
+//               </div>
+//               <div className="text-right">
+//                 <p>Signature: ____________________</p>
+//               </div>
+//             </div>
+//           </div>
+
+//           {/* Saved Bills Table */}
+//           <h3 className="text-2xl font-bold mt-12 mb-4 no-print">Saved Bills</h3>
+//           <div className="overflow-x-auto no-print">
+//             <table className="min-w-full divide-y divide-gray-200">
+//               <thead className="bg-indigo-900 text-white">
+//                 <tr>
+//                   <th onClick={() => handleSort('billId')} className="px-6 py-3 text-left cursor-pointer">Bill ID</th>
+//                   <th onClick={() => handleSort('customer')} className="px-6 py-3 text-left cursor-pointer">Customer</th>
+//                   <th onClick={() => handleSort('totalAmount')} className="px-6 py-3 text-left cursor-pointer">Total</th>
+//                   <th onClick={() => handleSort('dueDate')} className="px-6 py-3 text-left cursor-pointer">Date</th>
+//                   <th className="px-6 py-3 text-left">Actions</th>
+//                 </tr>
+//               </thead>
+//               <tbody>
+//                 {bills.map(bill => (
+//                   <tr key={bill._id} className="hover:bg-gray-50">
+//                     <td className="px-6 py-4">{bill.billId}</td>
+//                     <td className="px-6 py-4">{bill.customer}</td>
+//                     <td className="px-6 py-4">₹{bill.totalAmount.toFixed(2)}</td>
+//                     <td className="px-6 py-4">{new Date(bill.dueDate).toLocaleDateString()}</td>
+//                     <td className="px-6 py-4 flex gap-3">
+//                       <button onClick={() => handleEdit(bill)} className="text-blue-600 hover:text-blue-800"><FaEdit /></button>
+//                       <button onClick={() => handleDelete(bill._id)} className="text-red-600 hover:text-red-800"><FaTrash /></button>
+//                     </td>
+//                   </tr>
+//                 ))}
+//               </tbody>
+//             </table>
+//           </div>
+//         </div>
+//       </div>
+//     </>
+//   );
+// };
+
+// export default Bill;
+
+
+
+
+
 import axios from '../../axiosConfig';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { toast } from 'react-toastify';
-import { FaSearch, FaEdit, FaTrash, FaPlus, FaTimes, FaPrint, FaWhatsapp, FaPhone, FaMapMarkerAlt } from 'react-icons/fa';
+import { FaSearch, FaEdit, FaTrash, FaPlus, FaTimes, FaPrint, FaWhatsapp, FaPhone, FaMapMarkerAlt, FaChevronDown } from 'react-icons/fa';
 
 const Bill = () => {
   const [bills, setBills] = useState([]);
+  const [stocks, setStocks] = useState([]);
+
+  // Current date in DD/MM/YYYY
+  const today = new Date();
+  const formattedToday = `${String(today.getDate()).padStart(2, '0')}/${String(today.getMonth() + 1).padStart(2, '0')}/${today.getFullYear()}`;
+
   const [formData, setFormData] = useState({
     billId: '',
     customer: '',
-    dueDate: '',
-    items: [{ no: '', particulars: '', qty: '', rate: '', amount: '' }],
+    dueDate: formattedToday,
+    items: [{ no: 1, particulars: '', qty: '', rate: '', amount: '' }],
     totalAmount: '',
   });
+
   const [editingId, setEditingId] = useState(null);
   const [search, setSearch] = useState('');
   const [sortBy, setSortBy] = useState('dueDate');
   const [sortOrder, setSortOrder] = useState('desc');
 
-  // Fetch bills
+  const [showDropdown, setShowDropdown] = useState({});
+  const dropdownRefs = useRef([]);
+
   useEffect(() => {
-    const fetchBills = async () => {
+    const fetchData = async () => {
       try {
-        const res = await axios.get(`/api/bills?search=${search}&sortBy=${sortBy}&order=${sortOrder}`);
-        setBills(res.data);
+        const [billsRes, stocksRes] = await Promise.all([
+          axios.get(`/api/bills?search=${search}&sortBy=${sortBy}&order=${sortOrder}`),
+          axios.get('/api/stocks'),
+        ]);
+        setBills(Array.isArray(billsRes.data) ? billsRes.data : []);
+        setStocks(Array.isArray(stocksRes.data) ? stocksRes.data : []);
       } catch (err) {
-        toast.error('Failed to fetch bills');
+        toast.error('Failed to load data');
       }
     };
-    fetchBills();
+    fetchData();
   }, [search, sortBy, sortOrder]);
 
-  // Handle form input changes
+  const getStockInfo = (name) => {
+    const stock = stocks.find(s => s.stockName === name);
+    return {
+      available: stock ? stock.quantity : 0,
+      price: stock?.salePrice || stock?.purchaseId?.salePrice || 0,
+    };
+  };
+
+  const productOptions = [...new Set(stocks.map(s => s.stockName).filter(Boolean))].sort();
+
+  const handleProductChange = (e, index) => {
+    const value = e.target.value;
+    const newItems = [...formData.items];
+    newItems[index].particulars = value;
+
+    const info = getStockInfo(value);
+    if (info.price > 0) {
+      newItems[index].rate = info.price.toString();
+      const qty = parseFloat(newItems[index].qty) || 0;
+      newItems[index].amount = (qty * info.price).toFixed(2);
+    }
+
+    setFormData({ ...formData, items: newItems });
+    calculateTotal(newItems);
+  };
+
+  const selectProduct = (name, index) => {
+    const newItems = [...formData.items];
+    newItems[index].particulars = name;
+
+    const info = getStockInfo(name);
+    if (info.price > 0) {
+      newItems[index].rate = info.price.toString();
+      const qty = parseFloat(newItems[index].qty) || 0;
+      newItems[index].amount = (qty * info.price).toFixed(2);
+    }
+
+    setFormData({ ...formData, items: newItems });
+    calculateTotal(newItems);
+    setShowDropdown({ ...showDropdown, [index]: false });
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      dropdownRefs.current.forEach((ref, i) => {
+        if (ref && !ref.contains(e.target)) {
+          setShowDropdown(prev => ({ ...prev, [i]: false }));
+        }
+      });
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   const handleInputChange = (e, index = null) => {
     const { name, value } = e.target;
     if (index !== null) {
       const newItems = [...formData.items];
       newItems[index][name] = value;
+
       if (name === 'qty' || name === 'rate') {
         const qty = parseFloat(newItems[index].qty) || 0;
         const rate = parseFloat(newItems[index].rate) || 0;
         newItems[index].amount = (qty * rate).toFixed(2);
       }
+
       setFormData({ ...formData, items: newItems });
+      calculateTotal(newItems);
     } else {
       setFormData({ ...formData, [name]: value });
     }
-    calculateTotal();
   };
 
-  // Calculate total amount
-  const calculateTotal = () => {
-    const total = formData.items.reduce((sum, item) => sum + parseFloat(item.amount || 0), 0);
-    setFormData((prev) => ({ ...prev, totalAmount: total.toFixed(2) }));
+  const calculateTotal = (items = formData.items) => {
+    const total = items.reduce((sum, item) => sum + parseFloat(item.amount || 0), 0);
+    setFormData(prev => ({ ...prev, totalAmount: total.toFixed(2) }));
   };
 
-  // Add new item
   const addItem = () => {
     setFormData({
       ...formData,
@@ -569,424 +2639,448 @@ const Bill = () => {
     });
   };
 
-  // Remove item
   const removeItem = (index) => {
     const newItems = formData.items.filter((_, i) => i !== index);
-    setFormData({ ...formData, items: newItems.map((item, i) => ({ ...item, no: i + 1 })) });
-    calculateTotal();
+    setFormData({
+      ...formData,
+      items: newItems.map((item, i) => ({ ...item, no: i + 1 })),
+    });
+    calculateTotal(newItems);
   };
 
-  // Handle form submission
+  const validateStock = () => {
+    for (const item of formData.items) {
+      if (!item.particulars || !item.qty) continue;
+      const info = getStockInfo(item.particulars);
+      const qty = parseInt(item.qty);
+      if (qty > info.available) {
+        toast.error(`Only ${info.available} "${item.particulars}" available in stock`);
+        return false;
+      }
+    }
+    return true;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!validateStock()) return;
+
     try {
       const billData = {
         ...formData,
-        items: formData.items.map((item, index) => ({
-          ...item,
-          no: index + 1,
-          qty: parseInt(item.qty),
-          rate: parseFloat(item.rate),
-          amount: parseFloat(item.amount),
-        })),
+        items: formData.items
+          .filter(i => i.particulars && i.qty)
+          .map((item, i) => ({
+            no: i + 1,
+            particulars: item.particulars,
+            qty: parseInt(item.qty),
+            rate: parseFloat(item.rate),
+            amount: parseFloat(item.amount),
+          })),
         totalAmount: parseFloat(formData.totalAmount),
       };
+
       if (editingId) {
         const res = await axios.put(`/api/bills/${editingId}`, billData);
-        setBills(bills.map((bill) => (bill._id === editingId ? res.data : bill)));
-        setEditingId(null);
-        toast.success('Bill updated successfully');
+        setBills(bills.map(b => b._id === editingId ? res.data : b));
+        toast.success('Bill updated');
       } else {
-        const res = await axios.post('/api/bills', billData);
-        setBills([res.data, ...bills]);
-        toast.success('Bill created successfully');
+        const billRes = await axios.post('/api/bills', billData);
+        setBills([billRes.data, ...bills]);
+        toast.success('Bill created');
+
+        const saleData = {
+          date: formData.dueDate,
+          billId: billRes.data.billId,
+          items: billData.items.map(i => ({
+            stockName: i.particulars,
+            quantity: i.qty,
+            price: i.rate,
+          })),
+        };
+        await axios.post('/api/sales', saleData);
+
+        const updatedStocks = stocks.map(stock => {
+          const sold = billData.items.find(i => i.particulars === stock.stockName);
+          if (sold) {
+            return { ...stock, quantity: stock.quantity - sold.qty };
+          }
+          return stock;
+        });
+        setStocks(updatedStocks);
       }
-      resetForm();
+
+      setFormData({
+        billId: '',
+        customer: '',
+        dueDate: formattedToday,
+        items: [{ no: 1, particulars: '', qty: '', rate: '', amount: '' }],
+        totalAmount: '',
+      });
+      setEditingId(null);
     } catch (err) {
-      toast.error(err.response?.data?.error || 'Error saving bill');
+      toast.error(err.response?.data?.error || 'Failed to save bill');
     }
   };
 
-  // Reset form
   const resetForm = () => {
     setFormData({
       billId: '',
       customer: '',
-      dueDate: '',
+      dueDate: formattedToday,
       items: [{ no: 1, particulars: '', qty: '', rate: '', amount: '' }],
       totalAmount: '',
     });
     setEditingId(null);
   };
 
-  // Handle edit
   const handleEdit = (bill) => {
     setEditingId(bill._id);
+    const dateParts = bill.dueDate.split('T')[0].split('-');
+    const formattedDate = `${dateParts[2]}/${dateParts[1]}/${dateParts[0]}`;
+
     setFormData({
       billId: bill.billId,
       customer: bill.customer,
-      dueDate: bill.dueDate.split('T')[0],
-      items: bill.items.map((item, index) => ({
-        no: index + 1,
+      dueDate: formattedDate,
+      items: bill.items.map((item, i) => ({
+        no: i + 1,
         particulars: item.particulars,
-        qty: item.qty,
-        rate: item.rate,
+        qty: item.qty.toString(),
+        rate: item.rate.toString(),
         amount: item.amount.toFixed(2),
       })),
       totalAmount: bill.totalAmount.toFixed(2),
     });
   };
 
-  // Handle delete
   const handleDelete = async (id) => {
+    if (!confirm('Delete this bill?')) return;
     try {
       await axios.delete(`/api/bills/${id}`);
-      setBills(bills.filter((bill) => bill._id !== id));
-      toast.success('Bill deleted successfully');
+      setBills(bills.filter(b => b._id !== id));
+      toast.success('Bill deleted');
     } catch (err) {
-      toast.error('Error deleting bill');
+      toast.error('Delete failed');
     }
   };
 
-  // Handle sorting
   const handleSort = (field) => {
     setSortBy(field);
     setSortOrder(sortBy === field && sortOrder === 'asc' ? 'desc' : 'asc');
   };
 
-  // Print bill
   const printBill = () => {
-    console.log('Printing bill:', formData);
     window.print();
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-violet-200 to-blue-200 p-6">
-      <div className="bg-white shadow-xl rounded-lg p-8 max-w-7xl mx-auto">
-        <h2 className="text-3xl font-bold text-gray-800 mb-6 no-print">Bills</h2>
+    <>
+      {/* Perfect Print Styles */}
+      <style jsx>{`
+        @media print {
+          @page {
+            margin: 0;
+            size: A4;
+          }
+          html, body {
+            height: 100%;
+            margin: 0 !important;
+            padding: 0 !important;
+          }
+          body * {
+            visibility: hidden;
+          }
+          .print-area, .print-area * {
+            visibility: visible;
+          }
+          .print-area {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 210mm;
+            min-height: 297mm;
+            padding: 20mm;
+            background: white;
+            box-sizing: border-box;
+          }
+          .no-print {
+            display: none !important;
+          }
+          table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+          }
+          th, td {
+            border: 1px solid #000;
+            padding: 10px;
+            text-align: left;
+          }
+          th {
+            background-color: #4f46e5;
+            color: white;
+          }
+          h1 {
+            font-size: 36px;
+            text-align: center;
+            margin: 30px 0;
+          }
+        }
+      `}</style>
 
-        {/* Search Bar */}
-        <div className="mb-6 flex items-center gap-4 no-print">
-          <div className="relative flex-1">
-            <span className="absolute inset-y-0 left-0 flex items-center pl-3">
-              <FaSearch className="text-gray-400" />
-            </span>
-            <input
-              type="text"
-              placeholder="Search by Bill ID or Customer"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="pl-10 p-3 border border-gray-300 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-blue-600 transition duration-200"
-            />
-          </div>
-        </div>
+      <div className="min-h-screen bg-gradient-to-br from-violet-200 to-blue-200 p-6">
+        <div className="bg-white shadow-xl rounded-lg p-8 max-w-7xl mx-auto">
+          <h2 className="text-3xl font-bold text-gray-800 mb-6 no-print">Bills</h2>
 
-        {/* Form for Create/Update */}
-        <form onSubmit={handleSubmit} className="mb-8 no-print">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Bill ID</label>
+          <div className="mb-6 flex items-center gap-4 no-print">
+            <div className="relative flex-1">
+              <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
               <input
                 type="text"
-                name="billId"
-                value={formData.billId}
-                onChange={handleInputChange}
-                className="p-3 border border-gray-300 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-blue-600 transition duration-200"
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Customer</label>
-              <input
-                type="text"
-                name="customer"
-                value={formData.customer}
-                onChange={handleInputChange}
-                className="p-3 border border-gray-300 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-blue-600 transition duration-200"
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Date</label>
-              <input
-                type="date"
-                name="dueDate"
-                value={formData.dueDate}
-                onChange={handleInputChange}
-                className="p-3 border border-gray-300 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-blue-600 transition duration-200"
-                required
+                placeholder="Search by Bill ID or Customer"
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                className="pl-10 p-3 border rounded-lg w-full focus:ring-2 focus:ring-blue-600"
               />
             </div>
           </div>
 
-          {/* Items Table */}
-          <h3 className="text-xl font-semibold text-gray-800 mb-4">Items</h3>
-          <div className="overflow-x-auto mb-4">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-indigo-900 text-white">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">No</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Particulars</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Qty</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Rate</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Amount</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {formData.items.map((item, index) => (
-                  <tr key={index} className="hover:bg-gray-50 transition duration-200">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <input
-                        type="number"
-                        name="no"
-                        value={index + 1}
-                        disabled
-                        className="p-3 border border-gray-300 rounded-lg w-full bg-gray-100 cursor-not-allowed"
-                      />
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <input
-                        type="text"
-                        name="particulars"
-                        value={item.particulars}
-                        onChange={(e) => handleInputChange(e, index)}
-                        className="p-3 border border-gray-300 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-blue-600 transition duration-200"
-                        required
-                      />
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <input
-                        type="number"
-                        name="qty"
-                        value={item.qty}
-                        onChange={(e) => handleInputChange(e, index)}
-                        className="p-3 border border-gray-300 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-blue-600 transition duration-200"
-                        min="1"
-                        required
-                      />
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <input
-                        type="number"
-                        name="rate"
-                        value={item.rate}
-                        onChange={(e) => handleInputChange(e, index)}
-                        className="p-3 border border-gray-300 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-blue-600 transition duration-200"
-                        min="0"
-                        step="0.01"
-                        required
-                      />
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <input
-                        type="number"
-                        name="amount"
-                        value={item.amount}
-                        disabled
-                        className="p-3 border border-gray-300 rounded-lg w-full bg-gray-100 cursor-not-allowed"
-                      />
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      {formData.items.length > 1 && (
-                        <button
-                          type="button"
-                          onClick={() => removeItem(index)}
-                          className="text-red-600 hover:text-red-800"
-                        >
-                          <FaTimes />
-                        </button>
-                      )}
-                    </td>
+          <form onSubmit={handleSubmit} className="mb-8 no-print">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+              <div>
+                <label className="block text-sm font-medium mb-1">Bill ID</label>
+                <input type="text" name="billId" value={formData.billId} onChange={handleInputChange} required className="p-3 border rounded-lg w-full focus:ring-2 focus:ring-blue-600" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Customer</label>
+                <input type="text" name="customer" value={formData.customer} onChange={handleInputChange} required className="p-3 border rounded-lg w-full focus:ring-2 focus:ring-blue-600" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Date</label>
+                <input 
+                  type="text" 
+                  name="dueDate" 
+                  value={formData.dueDate} 
+                  onChange={handleInputChange} 
+                  placeholder="DD/MM/YYYY"
+                  required 
+                  className="p-3 border rounded-lg w-full focus:ring-2 focus:ring-blue-600" 
+                />
+              </div>
+            </div>
+
+            <h3 className="text-xl font-semibold mb-4">Items</h3>
+            <div className="overflow-x-auto mb-16">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-indigo-900 text-white">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium uppercase">No</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium uppercase">Particulars</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium uppercase">Qty</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium uppercase">Rate</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium uppercase">Amount</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium uppercase">Actions</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          <button
-            type="button"
-            onClick={addItem}
-            className="bg-green-600 text-white p-3 rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-600 transition duration-200 mb-6 flex items-center gap-2"
-          >
-            <FaPlus /> Add Item
-          </button>
-
-          <div className="flex justify-between items-center mb-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Total Amount</label>
-              <input
-                type="number"
-                name="totalAmount"
-                value={formData.totalAmount}
-                disabled
-                className="p-3 border border-gray-300 rounded-lg w-full bg-gray-100 cursor-not-allowed"
-              />
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {formData.items.map((item, index) => {
+                    const info = getStockInfo(item.particulars);
+                    return (
+                      <tr key={index}>
+                        <td className="px-6 py-4">{index + 1}</td>
+                        <td className="px-6 py-4 relative">
+                          <div className="relative" ref={el => dropdownRefs.current[index] = el}>
+                            <input
+                              type="text"
+                              value={item.particulars}
+                              onChange={e => handleProductChange(e, index)}
+                              onFocus={() => setShowDropdown({ ...showDropdown, [index]: true })}
+                              onClick={() => setShowDropdown({ ...showDropdown, [index]: true })}
+                              placeholder="Select product"
+                              required
+                              className="p-3 pr-10 border rounded-lg w-full focus:ring-2 focus:ring-blue-600"
+                            />
+                            <FaChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                            {showDropdown[index] && (
+                              <div className="absolute left-0 top-full mt-2 w-full bg-white border border-gray-300 rounded-lg shadow-2xl z-[1000] max-h-64 overflow-y-auto">
+                                {productOptions.length === 0 ? (
+                                  <div className="px-4 py-8 text-center text-gray-500">No products available</div>
+                                ) : (
+                                  productOptions.map(name => {
+                                    const stockInfo = getStockInfo(name);
+                                    return (
+                                      <div
+                                        key={name}
+                                        onClick={() => selectProduct(name, index)}
+                                        className="px-4 py-3 hover:bg-blue-50 hover:text-blue-700 cursor-pointer border-b border-gray-100 last:border-0 flex justify-between items-center"
+                                      >
+                                        <span className="font-medium">{name}</span>
+                                        <span className={`text-xs font-semibold ${stockInfo.available > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                          Stock: {stockInfo.available}
+                                        </span>
+                                      </div>
+                                    );
+                                  })
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <input type="number" name="qty" value={item.qty} onChange={e => handleInputChange(e, index)} min="1" max={info.available || undefined} required className="p-3 border rounded-lg w-full focus:ring-2 focus:ring-blue-600" />
+                        </td>
+                        <td className="px-6 py-4">
+                          <input type="number" name="rate" value={item.rate} onChange={e => handleInputChange(e, index)} min="0" step="0.01" required placeholder="Auto-filled" className="p-3 border rounded-lg w-full bg-gray-50" />
+                        </td>
+                        <td className="px-6 py-4">
+                          <input type="number" value={item.amount} disabled className="p-3 border rounded-lg w-full bg-gray-100" />
+                        </td>
+                        <td className="px-6 py-4">
+                          {formData.items.length > 1 && (
+                            <button type="button" onClick={() => removeItem(index)} className="text-red-600 hover:text-red-800">
+                              <FaTimes />
+                            </button>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
             </div>
-            <div className="flex gap-4">
-              <button
-                type="submit"
-                className="bg-blue-600 text-white p-3 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-600 transition duration-200 flex items-center gap-2"
-              >
-                {editingId ? 'Update Bill' : 'Save Bill'}
-              </button>
-              <button
-                type="button"
-                onClick={printBill}
-                className="bg-purple-600 text-white p-3 rounded-lg hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-600 transition duration-200 flex items-center gap-2"
-              >
-                <FaPrint /> Print Bill
-              </button>
-              {editingId && (
-                <button
-                  type="button"
-                  onClick={resetForm}
-                  className="bg-gray-600 text-white p-3 rounded-lg hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-600 transition duration-200 flex items-center gap-2"
-                >
-                  Cancel
+
+            <button type="button" onClick={addItem} className="bg-green-600 text-white p-3 rounded-lg hover:bg-green-700 flex items-center gap-2 mb-6">
+              <FaPlus /> Add Item
+            </button>
+
+            <div className="flex justify-between items-center">
+              <div>
+                <label className="block text-sm font-medium mb-1">Total Amount</label>
+                <input type="number" value={formData.totalAmount} disabled className="p-3 border rounded-lg w-48 bg-gray-100 font-bold text-lg" />
+              </div>
+              <div className="flex gap-4">
+                <button type="submit" className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700">
+                  {editingId ? 'Update Bill' : 'Save Bill'}
                 </button>
-              )}
+                <button type="button" onClick={printBill} className="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 flex items-center gap-2">
+                  <FaPrint /> Print
+                </button>
+                {editingId && (
+                  <button type="button" onClick={resetForm} className="bg-gray-600 text-white px-6 py-3 rounded-lg hover:bg-gray-700">
+                    Cancel
+                  </button>
+                )}
+              </div>
             </div>
-          </div>
-        </form>
+          </form>
 
-        {/* Bill Preview */}
-        <div className="mt-8 p-6 border border-gray-200 rounded-lg bg-white shadow-md print-area">
-          <h3 className="text-xl font-semibold text-gray-800 mb-4 no-print">Bill Preview</h3>
-          <div className="flex justify-between items-start mb-4">
-            <img src="/Images/logo.png" alt="Nizon Tech Logo" className="w-32" />
-            <div className="text-right text-sm text-gray-600 space-y-1">
-              <p className="flex items-center justify-end gap-2">
-                <FaWhatsapp className="text-green-500" /> 9846200284
-              </p>
-              <p className="flex items-center justify-end gap-2">
-                <FaPhone className="text-blue-500" /> 8078200284
-              </p>
-              <p className="flex items-center justify-end gap-2">
-                <FaMapMarkerAlt className="text-red-500" /> Near Canara Bank, KORATTY
-              </p>
+          {/* Bill Preview */}
+          <div className="mt-12 p-8 bg-white print-area">
+            <div className="flex justify-between items-start mb-6">
+              <img src="/Images/logo.png" alt="Nizon Tech" className="w-40" />
+              <div className="text-right space-y-1">
+                <p className="flex items-center justify-end gap-2"><FaWhatsapp className="text-green-500" /> 9846200284</p>
+                <p className="flex items-center justify-end gap-2"><FaPhone className="text-blue-500" /> 8078200284</p>
+                <p className="flex items-center justify-end gap-2"><FaMapMarkerAlt className="text-red-500" /> Near Canara Bank, KORATTY</p>
+              </div>
             </div>
-          </div>
-          <h1 className="text-2xl font-bold text-center text-gray-800 my-4">Bill</h1>
-          <div className="flex justify-between mb-4">
-            <div className="text-left text-sm text-gray-600 space-y-1">
-              <p><strong>Bill ID:</strong> {formData.billId || 'N/A'}</p>
-              <p><strong>Customer:</strong> {formData.customer || 'N/A'}</p>
+            <h1 className="text-4xl font-bold text-center my-8">BILL</h1>
+            <div className="flex justify-between mb-8">
+              <div>
+                <p><strong>Bill ID:</strong> {formData.billId || 'N/A'}</p>
+                <p><strong>Customer:</strong> {formData.customer || 'N/A'}</p>
+              </div>
+              <div>
+                <p><strong>Date:</strong> {formData.dueDate || 'N/A'}</p>
+              </div>
             </div>
-            <div className="text-right text-sm text-gray-600">
-              <p><strong>Date:</strong> {formData.dueDate ? new Date(formData.dueDate).toLocaleDateString() : 'N/A'}</p>
-            </div>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
+
+            <table className="min-w-full divide-y divide-gray-300 mb-8">
               <thead className="bg-indigo-900 text-white">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">No</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Particulars</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Qty</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Rate</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Amount Rs</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Ps</th>
+                  <th className="px-6 py-3 text-left">No</th>
+                  <th className="px-6 py-3 text-left">Particulars</th>
+                  <th className="px-6 py-3 text-left">Qty</th>
+                  <th className="px-6 py-3 text-left">Rate</th>
+                  <th className="px-6 py-3 text-left">Amount Rs</th>
+                  <th className="px-6 py-3 text-left">Ps</th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {formData.items.map((item, index) => {
+              <tbody>
+                {formData.items.map((item, i) => {
                   const amount = parseFloat(item.amount) || 0;
                   const rs = Math.floor(amount);
                   const ps = Math.round((amount - rs) * 100);
                   return (
-                    <tr key={index} className="hover:bg-gray-50 transition duration-200">
-                      <td className="px-6 py-4 whitespace-nowrap">{index + 1}</td>
-                      <td className="px-6 py-4 whitespace-nowrap">{item.particulars || 'N/A'}</td>
-                      <td className="px-6 py-4 whitespace-nowrap">{item.qty || '0'}</td>
-                      <td className="px-6 py-4 whitespace-nowrap">{item.rate || '0'}</td>
-                      <td className="px-6 py-4 whitespace-nowrap">{rs}</td>
-                      <td className="px-6 py-4 whitespace-nowrap">{ps}</td>
+                    <tr key={i}>
+                      <td className="px-6 py-3">{i + 1}</td>
+                      <td className="px-6 py-3">{item.particulars || '—'}</td>
+                      <td className="px-6 py-3 text-center">{item.qty || '0'}</td>
+                      <td className="px-6 py-3 text-right">{item.rate || '0'}</td>
+                      <td className="px-6 py-3 text-right">{rs}</td>
+                      <td className="px-6 py-3 text-right">{ps}</td>
                     </tr>
                   );
                 })}
-                <tr>
-                  <td colSpan="4" className="px-6 py-4 text-right font-bold text-gray-800">Total</td>
-                  <td className="px-6 py-4 font-bold text-gray-800">{Math.floor(formData.totalAmount || 0)}</td>
-                  <td className="px-6 py-4 font-bold text-gray-800">{Math.round((parseFloat(formData.totalAmount || 0) - Math.floor(parseFloat(formData.totalAmount || 0))) * 100)}</td>
+                <tr className="font-bold text-lg border-t-4 border-double border-black">
+                  <td colSpan="4" className="px-6 py-4 text-right">Total</td>
+                  <td className="px-6 py-4 text-right">{Math.floor(formData.totalAmount || 0)}</td>
+                  <td className="px-6 py-4 text-right">{Math.round((parseFloat(formData.totalAmount || 0) - Math.floor(parseFloat(formData.totalAmount || 0))) * 100)}</td>
                 </tr>
               </tbody>
             </table>
-          </div>
-          <div className="flex justify-between mt-6 text-sm text-gray-600">
-            <div className="space-y-1">
-              <p className="font-bold">BANK DETAILS</p>
-              <p>NAME: ANTHONESE KD</p>
-              <p>CANARA BANK KORATTY</p>
-              <p>A/C NO: 3480101003736</p>
-              <p>IFSC: CNRB0003480</p>
-            </div>
-            <div className="text-right">
-              <p>Signature: ____________________</p>
-            </div>
-          </div>
-        </div>
 
-        {/* Bills Table */}
-        <h3 className="text-xl font-semibold text-gray-800 mt-8 mb-4 no-print">Saved Bills</h3>
-        <div className="overflow-x-auto no-print">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-indigo-900 text-white">
-              <tr>
-                <th
-                  className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider cursor-pointer"
-                  onClick={() => handleSort('billId')}
-                >
-                  Bill ID {sortBy === 'billId' && (sortOrder === 'asc' ? '↑' : '↓')}
-                </th>
-                <th
-                  className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider cursor-pointer"
-                  onClick={() => handleSort('customer')}
-                >
-                  Customer {sortBy === 'customer' && (sortOrder === 'asc' ? '↑' : '↓')}
-                </th>
-                <th
-                  className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider cursor-pointer"
-                  onClick={() => handleSort('totalAmount')}
-                >
-                  Total Amount {sortBy === 'totalAmount' && (sortOrder === 'asc' ? '↑' : '↓')}
-                </th>
-                <th
-                  className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider cursor-pointer"
-                  onClick={() => handleSort('dueDate')}
-                >
-                  Date {sortBy === 'dueDate' && (sortOrder === 'asc' ? '↑' : '↓')}
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {bills.map((bill) => (
-                <tr key={bill._id} className="hover:bg-gray-50 transition duration-200">
-                  <td className="px-6 py-4 whitespace-nowrap">{bill.billId}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">{bill.customer}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">${bill.totalAmount.toFixed(2)}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">{new Date(bill.dueDate).toLocaleDateString()}</td>
-                  <td className="px-6 py-4 whitespace-nowrap flex items-center gap-2">
-                    <button
-                      onClick={() => handleEdit(bill)}
-                      className="text-blue-500 hover:text-blue-600"
-                    >
-                      <FaEdit />
-                    </button>
-                    <button
-                      onClick={() => handleDelete(bill._id)}
-                      className="text-red-600 hover:text-red-400"
-                    >
-                      <FaTrash />
-                    </button>
-                  </td>
+            <div className="flex justify-between mt-12 text-sm">
+              <div>
+                <p className="font-bold text-lg">BANK DETAILS</p>
+                <p>NAME: ANTHONESE KD</p>
+                <p>CANARA BANK KORATTY</p>
+                <p>A/C NO: 3480101003736</p>
+                <p>IFSC: CNRB0003480</p>
+              </div>
+              <div className="text-right">
+                <p>Signature: ____________________</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Saved Bills Table */}
+          <h3 className="text-2xl font-bold mt-12 mb-4 no-print">Saved Bills</h3>
+          <div className="overflow-x-auto no-print">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-indigo-900 text-white">
+                <tr>
+                  <th onClick={() => handleSort('billId')} className="px-6 py-3 text-left cursor-pointer">Bill ID</th>
+                  <th onClick={() => handleSort('customer')} className="px-6 py-3 text-left cursor-pointer">Customer</th>
+                  <th onClick={() => handleSort('totalAmount')} className="px-6 py-3 text-left cursor-pointer">Total</th>
+                  <th onClick={() => handleSort('dueDate')} className="px-6 py-3 text-left cursor-pointer">Date</th>
+                  <th className="px-6 py-3 text-left">Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {bills.map(bill => {
+                  const dateParts = bill.dueDate.split('T')[0].split('-');
+                  const formattedDate = `${dateParts[2]}/${dateParts[1]}/${dateParts[0]}`;
+                  return (
+                    <tr key={bill._id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4">{bill.billId}</td>
+                      <td className="px-6 py-4">{bill.customer}</td>
+                      <td className="px-6 py-4">₹{bill.totalAmount.toFixed(2)}</td>
+                      <td className="px-6 py-4">{formattedDate}</td>
+                      <td className="px-6 py-4 flex gap-3">
+                        <button onClick={() => handleEdit(bill)} className="text-blue-600 hover:text-blue-800"><FaEdit /></button>
+                        <button onClick={() => handleDelete(bill._id)} className="text-red-600 hover:text-red-800"><FaTrash /></button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 
