@@ -2992,9 +2992,12 @@ const Bill = () => {
                 <p><strong>Customer:</strong> {formData.customer || 'N/A'}</p>
               </div>
               <div>
+
                 <p><strong>Date:</strong> {formData.dueDate || 'N/A'}</p>
               </div>
             </div>
+            
+            
 
             <table className="min-w-full divide-y divide-gray-300 mb-8">
               <thead className="bg-indigo-900 text-white">
