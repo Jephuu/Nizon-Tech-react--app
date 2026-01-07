@@ -2996,7 +2996,7 @@ const Bill = () => {
                 <p><strong>Date:</strong> {formData.dueDate || 'N/A'}</p>
               </div>
             </div>
-            
+            {/*  */}
             
 
             <table className="min-w-full divide-y divide-gray-300 mb-8">
